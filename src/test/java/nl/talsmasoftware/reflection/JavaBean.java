@@ -8,7 +8,7 @@ public class JavaBean {
     private Boolean value3;
     private Object value4;
 
-    JavaBean(String value1, Integer value2, Boolean value3, Object value4) {
+    public JavaBean(String value1, Integer value2, Boolean value3, Object value4) {
         this.value1 = value1;
         this.value2 = value2;
         this.value3 = value3;

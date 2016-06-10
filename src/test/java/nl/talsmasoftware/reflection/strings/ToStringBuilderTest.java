@@ -1,5 +1,7 @@
-package nl.talsmasoftware.reflection;
+package nl.talsmasoftware.reflection.strings;
 
+import nl.talsmasoftware.reflection.JavaBean;
+import nl.talsmasoftware.reflection.strings.ToStringBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

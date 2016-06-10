@@ -199,6 +199,8 @@
                             <additionalparam>
                                 -umlSkipStandardDoclet true
                                 -umlImageFormat SVG
+                                -umlCommand "hide empty fields"
+                                -umlCommand "hide empty methods"
                             </additionalparam>
                         </configuration>
                     </execution>

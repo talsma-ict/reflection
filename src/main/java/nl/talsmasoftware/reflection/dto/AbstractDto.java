@@ -1,34 +1,67 @@
+/*
+ * Copyright (C) 2016 Talsma ICT
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package nl.talsmasoftware.reflection.dto;
 
-import nl.talsmasoftware.reflection.beans.BeanReflectionSupport;
+import nl.talsmasoftware.reflection.strings.ToStringBuilder;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static java.util.Arrays.asList;
+import static nl.talsmasoftware.reflection.beans.BeanReflectionSupport.getPropertyValues;
+import static nl.talsmasoftware.reflection.beans.BeanReflectionSupport.setPropertyValue;
 
 /**
- * Abstracte basisklasse voor representatie objecten waarbij {@link Object#equals(Object)}, {@link Object#hashCode()},
- * {@link Object#toString()} en <code>clone()</code> zijn geimplementeerd op basis van de publieke properties
- * van het object.
+ * Abstract base class for DTO (data transfer objects) where {@link Object objects} are purely used for data
+ * representation, without any relevant object functionality. Traditionally, people often use the JavaBeans convention
+ * for such objects, meaning for every attribute, there will be a private field defined plus a getter and/or a setter
+ * method. This is rather cumbersome to program for a class where you're only interested in the data and (considering
+ * there are getters and setters) mutability is not a real issue. There are libraries such a Lombok to help you with
+ * this by generating this code for you.
  * <p>
- * Het is expliciet <em>wel</em> de bedoeling om hierbij publieke velden ook te ondersteunen
- * (naast javabean getters en setters)!
+ * However, what is inherently wrong with plain public fields in this case? What do the getters and setters actually buy
+ * you in 'percieved' encapsulation?
+ * <p>
+ * However, wouldn't it be nice to be able to use simply public fields and no methods whatsoever, but still be able to
+ * use the objects in {@link Object#hashCode() hash-based} collections, call {@link Object#equals(Object) equals()}
+ * and {@link Object#toString() toString()} methods or even {@link Object#clone() clone} the object?
+ * <p>
+ * Well, now you can. Just extend this AbstractDTO object, add public fields and you're ready with your data transfer
+ * object.
+ * <p>
+ * This abstract base class explicitly <strong>does</strong> support the use of public fields. What if you need to
+ * 'override' a field with a getter / setter method? No problem! This abstract superclass will detect property accessor
+ * methods and use those when applicable over the public fields.
  *
  * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
  */
 public abstract class AbstractDto implements Serializable, Cloneable {
-    // Recursie detectie in circulaire property waarden:
-    private enum RecurionDetectors {
+    // Recursion detection in circular data structures contained in property values:
+    private enum RecursionDetectors {
         HASHCODE, EQUALS, CLONE;
         private final ThreadLocal<Map<Object, Object>> recursionDetector = new ThreadLocal<Map<Object, Object>>() {
             @Override
             protected Map<Object, Object> initialValue() {
-                return new IdentityHashMapMap<Object, Object>();
+                return new IdentityHashMap<Object, Object>();
             }
         };
     }
@@ -36,18 +69,26 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     /**
      * Default constructor.
      * <p>
-     * Deze is protected gemaakt om het nog iets moeilijker te maken om rechtstreeks een instantie van deze abstracte
-     * klasse proberen te instanti&euml;ren.
+     * This constructor was made protected to discourage trying to instantiate this <strong>abstract</strong> class
+     * directly.
      */
     protected AbstractDto() {
     }
 
     /**
-     * Implementatie van equals op basis van de publieke velden van de concrete subklasse.
+     * Implementation of {@link Object#equals(Object) equals} based on the public fields and property accessor methods
+     * of the concrete subclass.
+     * <p>
+     * <em>BigDecimals:</em> Please note that {@link BigDecimal} property values will <strong>not</strong> be compared
+     * by the standard <code>equals()</code> implementation of BigDecimal, as that will declare the same number with
+     * different precision to be unequal (e.g. "0" is unequal to "0.00" by default). This implementation uses the
+     * {@link BigDecimal#compareTo(BigDecimal) compareTo()} method of <code>BigDecimal</code> instead, yielding
+     * mathematical "0" and "0.00" equal to each-other. Please note that although that is technically not correct, it
+     * is very useful for e.g. monetary value comparisons etc.
      *
-     * @param other Het andere object om mee te vergelijken.
-     * @return {@code true} indien het andere object ook een instantie is van de concrete subklasse en alle publieke
-     * velden overeenkomende waarden hebben, anders {@code false}.
+     * @param other The other object to compare with.
+     * @return <code>true</code> if the other object is also an instance of the same concrete subclass and all
+     * properties have the same value, otherwise <code>false</code>.
      */
     @Override
     public boolean equals(Object other) {
@@ -56,9 +97,9 @@ public abstract class AbstractDto implements Serializable, Cloneable {
         } else if (!getClass().isInstance(other)) {
             return false;
         }
-        Map<Object, Object> equivalentObjects = RecurionDetectors.EQUALS.recursionDetector.get();
+        Map<Object, Object> equivalentObjects = RecursionDetectors.EQUALS.recursionDetector.get();
         if (equivalentObjects.containsKey(this)) {
-            return other == equivalentObjects.get(this); // Recursie: Hier bewust geen equals() meer aanroepen.
+            return other == equivalentObjects.get(this); // Recursion: Intentionally don't call equals() here.
         } else try {
             equivalentObjects.put(this, other);
             return equals(getPropertyValues(this), getPropertyValues(other));
@@ -68,25 +109,27 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     }
 
     /**
-     * Implementatie van hashCode op basis van de publieke velden van de concrete subklasse.
+     * Implementation of {@link Object#hashCode() hashCode} based on the public fields and property accessor methods
+     * of the concrete subclass.
      * <p>
-     * Hierin zit een workaround ingebakken voor {@link BigDecimal} objecten; de hashcode berekening moet daarvan
-     * in lijn zijn met de equals berekening; daarom wordt daarvoor de
-     * {@link BigDecimal#doubleValue() double waarde} gebruikt.
+     * <em>BigDecimals:</em> Please note that this method contains a workaround for {@link BigDecimal} property values,
+     * so their <code>hashCode</code> outcome will be compatible with the {@link #equals(Object)} outcome. This is
+     * simply achieved by using the hash code of the {@link BigDecimal#doubleValue() double value} instead.
      *
-     * @return Een hashCode waarbij alle publieke velden van de concrete subklasse in meegenomen zijn.
+     * @return A hashCode that is based on the hashes of all public fields and property accessor methods of the concrete
+     * subclass.
      */
     @Override
     public int hashCode() {
         int result = 1;
-        Map<Object, Object> hashcodes = RecurionDetectors.HASHCODE.recursionDetector.get();
-        if (hashcodes.containsKey(this)) { // Recursie: circulaire object structuur; geef vaste hashcode terug.
+        Map<Object, Object> hashcodes = RecursionDetectors.HASHCODE.recursionDetector.get();
+        if (hashcodes.containsKey(this)) { // Recursion: circular object structure; return fixed hashcode.
             return result;
         } else try {
             hashcodes.put(this, this);
-            // [ST] dit werkt ALLEEN als we de properties in dezelfde volgorde krijgen: ?? Garantie voor inbouwen ??
+            // [ST] Note: this ONLY works if we get the properties in exactly the same order. ??Implement a guarantee??
             for (Object obj : getPropertyValues(this).values()) {
-                result = 31 * result + Objects.hashCode(obj instanceof BigDecimal ? ((BigDecimal) obj).doubleValue() : obj);
+                result = 31 * result + hashCode(obj);
             }
             return result;
         } finally {
@@ -95,11 +138,14 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     }
 
     /**
-     * Implementatie van toString op basis van de standaard ingestelde {@link ToStringBuilder},
-     * waarbij de namen + waarden van alle publieke velden van de concrete subklasse
-     * worden {@link ToStringBuilder#append(CharSequence, Object) toegevoegd}.
+     * Implementaiton of {@link Object#toString() toString} based on the public fields and property accessor methods
+     * of the concrete subclass. This method is delegated to the dedicated {@link ToStringBuilder} helper class that
+     * also supports reflective toString resolution.
+     * <p>
+     * The names and values of all public properties will be {@link ToStringBuilder#append(CharSequence, Object) added}
+     * to the resulting String.
      *
-     * @return De toString representatie op basis van de standaard {@code ToStringBuilder}.
+     * @return A readable toString representation based on the standard <code>ToStringBuilder</code>.
      * @see ToStringBuilder
      */
     @Override
@@ -108,52 +154,90 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     }
 
     /**
-     * Implementatie van clone waarbij de waarden van alle publieke velden 'diep' worden gecloned indien deze ook
-     * {@link Cloneable} zijn.
+     * Implementation of {@link Object#clone() clone} based on the public fields and property accessor methods of the
+     * concrete subclass. All properties are 'deep' cloned if they are also {@link Cloneable} objects themselves.
      *
-     * @return Een kopie van dit object.
+     * @return A cloned copy of this object.
      */
     @Override
     public AbstractDto clone() {
-        Map<Object, Object> clones = RecurionDetectors.CLONE.recursionDetector.get();
-        if (clones.containsKey(this)) { // Recursie: Geeft referentie naar al gecloned object terug.
+        Map<Object, Object> clones = RecursionDetectors.CLONE.recursionDetector.get();
+        if (clones.containsKey(this)) { // Recursion: Return object reference to already-cloned object.
             return (AbstractDto) clones.get(this);
         } else try {
             AbstractDto clone = (AbstractDto) super.clone();
             clones.put(this, clone);
-            for (Map.Entry<String, Object> property : BeanReflectionSupport.getPropertyValues(this).entrySet()) {
-                if (!"class".equals(property.getKey())) { // De property "class" kan uiteraard niet gekopieerd worden.
-                    Object value = property.getValue();
-                    if (value instanceof Cloneable) {
-                        value = value.getClass().getMethod("clone").invoke(value);
-                    }
-                    BeanReflectionSupport.setPropertyValue(clone, property.getKey(), value);
+            for (Map.Entry<String, Object> property : getPropertyValues(this).entrySet()) {
+                if (!"class".equals(property.getKey())) { // The property "class" should obviously not be cloned.
+                    setPropertyValue(clone, property.getKey(),
+                            cloneIfCloneable(property.getKey(), property.getValue()));
                 }
             }
             return clone;
-        } catch (CloneNotSupportedException | ReflectiveOperationException cloneFout) {
-            throw new IllegalStateException(String.format("Clone is niet mogelijk voor %s.", this), cloneFout);
+        } catch (CloneNotSupportedException cnse) {
+            throw new IllegalStateException(String.format("Clone is not supported for %s.", this), cnse);
         } finally {
             clones.remove(this);
         }
     }
 
     /**
-     * Equals implementatie die specifieke vergelijking voor {@link Map}, {@link List}, {@code Array} vergelijking en
-     * BigDecimal bevat.
-     * <p>
-     * De {@link Map} implementatie is toegevoegd om eenvoudig alle gereflecteerde properties op inhoud te kunnen
-     * vergelijken.
-     * <p>
-     * De {@link List} en {@code Object[]} implementatie is toegevoegd om deze specifieke equals voor objecten in een
-     * vaste volgorde te kunnen gebruiken.
-     * <p>
-     * Voor {@link BigDecimal} waarden die mathematisch niet gelijk zijn, maar qua daadwerkelijke waarde wel, wordt
-     * de 'waarde' vergelijking gehanteerd.
-     * Voorbeeld: BigDecimals {@code "0"} en {@code "0.00"} zijn mathematisch ongelijk vanwege ongelijke
-     * nauwkeurigheid, maar representeren beide dezelfde waarde, equals zal in dit geval dan ook {@code true} opleveren.
+     * Returns the result of <code>propertyValue.clone()</code> if it implements the {@link Cloneable} interface, or
+     * the <code>propertyValue</code> itself if it doesn't.
+     *
+     * @param propertyName  The name of the property being cloned.
+     * @param propertyValue The value of the property being cloned.
+     * @return The (possibly cloned) property value.
      */
-    private static boolean equals(Object objectA, Object objectB) {
+    private Object cloneIfCloneable(String propertyName, Object propertyValue) {
+        try {
+
+            return propertyValue instanceof Cloneable ? propertyValue.getClass().getMethod("clone").invoke(propertyValue)
+                    : propertyValue;
+
+        } catch (NoSuchMethodException nsme) {
+            throw new IllegalStateException(String.format(
+                    "Clone method is not found for property \"%s\" of %s.", propertyName, this), nsme);
+        } catch (IllegalAccessException iae) {
+            throw new IllegalStateException(String.format(
+                    "Not allowed to clone property \"%s\" of %s.", propertyName, this), iae);
+        } catch (InvocationTargetException ite) {
+            throw ite.getCause() instanceof RuntimeException ? (RuntimeException) ite.getCause()
+                    : new IllegalStateException(String.format(
+                    "Exception while cloning property \"%s\" of %s.", propertyName, this), ite.getCause());
+        }
+    }
+
+    /**
+     * Hashcode implementation that returns the hashCode for various objects, so they match the equals definition.
+     *
+     * @param obj The object to calculate the hash code for (might be <code>null</code> for properties without a value).
+     * @return The calculated hash code.
+     */
+    protected int hashCode(Object obj) {
+        return obj == null ? 0
+                : obj instanceof BigDecimal ? Double.valueOf(((BigDecimal) obj).doubleValue()).hashCode()
+                : obj.hashCode();
+    }
+
+    /**
+     * Equals implementation that provides specific equality implementations for {@link Map}, {@link List},
+     * {@code Array} and {@link BigDecimal} types.
+     * <p>
+     * The {@link Map} implementation was added to be able to simply determine equality of all reflected properties of
+     * concrete DTO object instances (which are returned as a <code>Map</code> from {@link String} to {@link Object}).
+     * <p>
+     * {@link BigDecimal} values are evaluated based on their {@link BigDecimal#compareTo(BigDecimal)} results.
+     * Example: BigDecimals {@code "0"} and {@code "0.00"} are mathematically /scientifically unequal due to different
+     * precisions, but represent the same numerical value. Equals will therefore return {@code true} in this case.
+     *
+     * @param objectA The first object to be compared for equality
+     *                (might be <code>null</code> for properties without a value).
+     * @param objectB The second object to be compared for equality
+     *                (might be <code>null</code> for properties without a value).
+     * @return <code>true</code> if the two objects are equal to each-other.
+     */
+    protected boolean equals(Object objectA, Object objectB) {
         if (objectA == objectB) {
             return true;
         } else if (objectA instanceof Map && objectB instanceof Map) {
@@ -165,23 +249,20 @@ public abstract class AbstractDto implements Serializable, Cloneable {
         } else if (objectA instanceof BigDecimal && objectB instanceof BigDecimal) {
             return ((BigDecimal) objectA).compareTo((BigDecimal) objectB) == 0;
         }
-        return Objects.equals(objectA, objectB);
+        return objectA != null && objectA.equals(objectB); // == check above will handle the nulls
     }
 
     /**
-     * Map specifieke equality methode om de properties van twee objecten te kunnen vergelijken waarbij waarden weer
-     * recursief via de algemene {@link #equals(Object, Object)} worden gedelegeerd.
+     * Specific method for equality of {@link Map} objects to be able to compare to property maps.
      *
-     * @param mapA De ene map om te vergelijken.
-     * @param mapB De andere map om te vergelijken.
-     * @return {@code true} indien beide maps evenveel entries bevatten en map B alle entries van map A ook bevat
-     * (op basis van de equals definitie in deze klasse).
+     * @param mapA The first map to be compared.
+     * @param mapB The second map to be compared.
+     * @return <code>true</code> if both maps contain the same amount of entries and <code>mapB</code> contains all
+     * entries from <code>mapA</code> (based on the equality definition of this class).
      * @see #equals(Object, Object)
      */
-    private static boolean mapEquals(Map<?, ?> mapA, Map<?, ?> mapB) {
-        if (mapA.size() != mapB.size()) {
-            return false;
-        }
+    private boolean mapEquals(Map<?, ?> mapA, Map<?, ?> mapB) {
+        if (mapA.size() != mapB.size()) return false;
         for (Map.Entry<?, ?> entryA : mapA.entrySet()) {
             if (!mapB.containsKey(entryA.getKey()) || !equals(entryA.getValue(), mapB.get(entryA.getKey()))) {
                 return false;
@@ -191,16 +272,16 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     }
 
     /**
-     * List specifieke equality methode waarbij waarden weer recursief via de algemene {@link #equals(Object, Object)}
-     * worden gedelegeerd.
+     * Specific method for equality of {@link List} objects that uses the equality definition in this class for all
+     * list items in-order.
      *
-     * @param listA De ene lijst om te vergelijken.
-     * @param listB De andere lijst om te vergelijken.
-     * @return {@code true} indien beide lijsten evenveel elementen bevatten en alle elementen (in dezelfde volgorde)
-     * gelijk zijn op basis van de equals definitie in deze klasse.
+     * @param listA The first list to be compared.
+     * @param listB The second list to be compared.
+     * @return <code>true</code> if both elements contain the same amount of elements (in the same order) based on the
+     * equality definition of this class.
      * @see #equals(Object, Object)
      */
-    private static boolean listEquals(List<?> listA, List<?> listB) {
+    private boolean listEquals(List<?> listA, List<?> listB) {
         if (listA.size() != listB.size()) {
             return false;
         }

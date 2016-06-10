@@ -26,21 +26,33 @@ import java.lang.reflect.Type;
 public interface BeanProperty {
 
     /**
+     * The name of the bean property. This is either the field name or the name of the property deduced from a
+     * JavaBean accessor method (i.e. <code>getValue()</code> results in a property named <code>"value"</code>).
+     *
      * @return The name of the bean property.
      */
     String getName();
 
     /**
+     * The Java {@link Type} of the value contained in the bean property.
+     *
      * @return The type of the bean property.
      */
     Type getType();
 
     /**
+     * Indication whether the property can be read. Some properties can only be written,
+     * because there may only a 'setter' property accessor method defined.
+     *
      * @return Whether or not the bean property can be read.
      */
     boolean isReadable();
 
     /**
+     * Indication whether the property can be written. Some properties may only be read,
+     * for example <code>final</code> fields or fields with only a 'getter' property accessor
+     * method defined.
+     *
      * @return Whether or not the bean property can be weritten.
      */
     boolean isWriteable();

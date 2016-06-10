@@ -38,8 +38,7 @@ import static java.util.Collections.*;
  * Unfortunately this is necessary because the standard {@link Introspector bean introspector} does not return any
  * public fields.
  * <p>
- * TODO: Isolate this package into a separate project / JAR dependency and bundle it with this library.
- * That allows for separate lifecycles for the reflection code.
+ * Class diagram:<br><center><img src="BeanReflectionSupport.svg" /></center>
  *
  * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
  */
