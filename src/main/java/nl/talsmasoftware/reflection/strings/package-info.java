@@ -16,7 +16,7 @@
  */
 
 /**
- * This package is intended for all kinds of String related classes in combination with reflection.
+ * This package is intended for String related classes in combination with reflection.
  * For example, there is a {@link nl.talsmasoftware.reflection.strings.ToStringBuilder ToStringBuilder}
  * that will reflect appended values if the toString() result of the value equals the standard
  * <code>java.lang.Object</code> (class@hash) representation.
