@@ -21,7 +21,7 @@
  * that will reflect appended values if the toString() result of the value equals the standard
  * <code>java.lang.Object</code> (class@hash) representation.
  * <p>
- * Class diagram for this package:<br><center><img src="package.svg" /></center>
+ * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
  *
  * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
  */
