@@ -20,7 +20,7 @@
  * {@link nl.talsmasoftware.reflection.beans.BeanReflectionSupport BeanReflectionSupport} providing static utility
  * methods that enable reflection of public fields and property accessor methods.
  * <p>
- * Class diagram for this package:<br><center><img src="package.svg" /></center>
+ * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
  *
  * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
  */

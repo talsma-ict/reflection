@@ -38,7 +38,7 @@ import static java.util.Collections.*;
  * Unfortunately this is necessary because the standard {@link Introspector bean introspector} does not return any
  * public fields.
  * <p>
- * Class diagram:<br><center><img src="BeanReflectionSupport.svg" /></center>
+ * Class diagram:<br><center><img src="BeanReflectionSupport.svg" alt="class diagram"></center>
  *
  * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
  */
