@@ -37,7 +37,7 @@ import java.util.Map;
  * An example of a default result could be:
  * <code>"TypeName{field=\"String value\", otherField=0, booleanField=false}"</code>.
  * <p>
- * Class diagram:<br><center><img src="ToStringBuilder.svg" /></center>
+ * Class diagram:<br><center><img src="ToStringBuilder.svg" alt="class diagram"></center>
 *
  * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
  */
