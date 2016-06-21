@@ -38,7 +38,7 @@ public class BeanReflectionSupportTest {
     }
 
     @Test
-    public void testGetProperty_nulls() {
+    public void testGetPropertyValue_nulls() {
         assertThat(BeanReflectionSupport.getPropertyValue(null, null), is(nullValue()));
         assertThat(BeanReflectionSupport.getPropertyValue(null, "property"), is(nullValue()));
         assertThat(BeanReflectionSupport.getPropertyValue(new Object(), null), is(nullValue()));
@@ -46,22 +46,32 @@ public class BeanReflectionSupportTest {
     }
 
     @Test
-    public void testGetProperty_notFound() {
+    public void testGetPropertyValue_notFound() {
         assertThat(BeanReflectionSupport.getPropertyValue(new Object(), "notFound"), is(nullValue()));
     }
 
     @Test
-    public void testGetter() {
+    public void testGetPropertyValue() {
+        assertThat(BeanReflectionSupport.getPropertyValue(new Object(), "class"), is(equalTo((Object) Object.class)));
+    }
+
+    @Test
+    public void testSetPropertyValue_class() {
+        assertThat(BeanReflectionSupport.setPropertyValue(new Object(), "class", String.class), is(false));
+    }
+
+    @Test
+    public void testGetPropertyValue_withGetter() {
         assertThat(BeanReflectionSupport.getPropertyValue(new BeanWithGetter("a"), "value"), is(equalTo((Object) "a")));
     }
 
     @Test
-    public void testBooleanProperty() {
+    public void testGetPropertyValue_booleanProperty() {
         assertThat(BeanReflectionSupport.getPropertyValue(new BeanWithBooleanProperty(true), "indication"), is(equalTo((Object) true)));
     }
 
     @Test
-    public void testAccessorsAndFields() {
+    public void testGetPropertyValue_accessorsAndFields() {
         BeanWithAccessorsAndFields bean = new BeanWithAccessorsAndFields("a", true);
         assertThat(BeanReflectionSupport.getPropertyValue(bean, "value"), is(equalTo((Object) "a")));
         assertThat(BeanReflectionSupport.getPropertyValue(bean, "indication"), is(equalTo((Object) true)));
@@ -70,7 +80,7 @@ public class BeanReflectionSupportTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetProperties_mutability() {
+    public void testGetBeanProperties_mutability() {
         Iterator<BeanProperty> it = BeanReflectionSupport.getBeanProperties(BeanWithAccessorsAndFields.class).iterator();
         it.next();
         it.remove();
@@ -116,7 +126,7 @@ public class BeanReflectionSupportTest {
     }
 
     @Test
-    public void testSetProperty_finalField() {
+    public void testSetPropertyValue_finalField() {
         BeanWithAccessorsAndFields bean = new BeanWithAccessorsAndFields("old value", false);
         assertThat(BeanReflectionSupport.setPropertyValue(bean, "value", "new value"), is(equalTo(false)));
         assertThat(bean.value, is(equalTo("old value")));
