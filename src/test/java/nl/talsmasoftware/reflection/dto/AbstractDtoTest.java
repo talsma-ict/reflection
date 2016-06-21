@@ -32,21 +32,12 @@ import static org.hamcrest.Matchers.*;
  */
 public class AbstractDtoTest {
 
-    public static class DtoRepresentationV1 extends AbstractDto {
-        public long number;
-        public String name;
-        public BigDecimal amountInEuros;
-        public DtoRepresentationV1 subObject;
-    }
-
-    // TODO separate into own json / java mapping tests.
-//    ObjectMapper jsonMapper;
+    // TODO separate into own java mapping tests.
 //    ModelMapper domeinMapper;
     DtoRepresentationV1 valueObject;
 
     @Before
     public void setUp() {
-//        jsonMapper = new ObjectMapper();
 //        domeinMapper = new ModelMapper();
 //        domeinMapper.getConfiguration().setFieldMatchingEnabled(true);
 
@@ -71,36 +62,6 @@ public class AbstractDtoTest {
         assertThat("copy.subObject.name", copy.subObject.name, is(nullValue()));
         assertThat("copy.subObject.subObject", copy.subObject.subObject, is(nullValue()));
     }
-
-//    @Test
-//    public void deserializeFromJson() throws Exception {
-//        DtoRepresentationV1 deserialized = jsonMapper.readValue(fixture("/fixtures/value-object-1.json"), DtoRepresentationV1.class);
-//        assertThat("Uit JSON gelezen voorbeeld", deserialized, is(equalTo(valueObject)));
-//    }
-
-//    @Test
-//    public void serializeToJson() throws Exception {
-//        final String expected = fixture("/fixtures/value-object-1.json");
-//        String serialized = jsonMapper.writeValueAsString(valueObject);
-//        JSONAssert.assertEquals(expected, serialized, false);
-//    }
-
-//    @Test
-//    public void javaModelMapping() throws Exception {
-//        DtoRepresentationV1 mapped = domeinMapper.map(
-//                new DomeinObject.Builder()
-//                        .number(42L)
-//                        .name("Domein name")
-//                        .child().number(12L).parent()
-//                        .build(),
-//                DtoRepresentationV1.class);
-//
-//        assertThat(mapped, is(not(nullValue())));
-//        assertThat(mapped.number, is(equalTo(42L)));
-//        assertThat(mapped.name, is(equalTo("Domein name")));
-//        assertThat(mapped.subObject, is(not(nullValue())));
-//        assertThat(mapped.subObject.number, is(equalTo(12L)));
-//    }
 
     @Test
     public void testEquals_null() {

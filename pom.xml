@@ -65,6 +65,7 @@
         <xmlunit.version>2.1.1</xmlunit.version>
         <hibernate-validator.version>5.2.4.Final</hibernate-validator.version>
         <javax-el.version>2.2.4</javax-el.version>
+        <jackson2.version>2.7.5</jackson2.version>
 
         <!-- build -->
         <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
@@ -269,6 +270,12 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.el</artifactId>
             <version>${javax-el.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson2.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
