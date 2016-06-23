@@ -126,8 +126,8 @@ public final class BeanReflectionSupport {
             for (PropertyDescriptor descriptor : Introspector.getBeanInfo(sourceType).getPropertyDescriptors()) {
                 String name = descriptor.getName();
                 ReflectedBeanProperty property = properties.get(name);
-                if (property == null) properties.put(name, new ReflectedBeanProperty(descriptor, null));
-                else properties.put(name, property.withDescriptor(descriptor));
+                properties.put(name, property == null ? new ReflectedBeanProperty(descriptor, null)
+                        : property.withDescriptor(descriptor));
             }
         } catch (IntrospectionException is) {
             LOGGER.log(Level.FINEST, "Could not reflect bean information of {0} because: {1}",

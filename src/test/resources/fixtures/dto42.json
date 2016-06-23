@@ -1,0 +1,10 @@
+{
+  "number": 42,
+  "name": "The Answer to the Ultimate Question of Life, the Universe, and Everything",
+  "amountInEuros": 42.00,
+  "subObject": {
+    "number": 13,
+    "name": "Bad luck",
+    "amountInEuros": 13.13
+  }
+}
