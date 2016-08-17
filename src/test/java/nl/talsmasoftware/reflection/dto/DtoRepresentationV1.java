@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * Simple datastructure representation providing only public fields.
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public class DtoRepresentationV1 extends AbstractDto {
 

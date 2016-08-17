@@ -23,7 +23,7 @@ import java.io.*;
 import java.util.logging.Logger;
 
 /**
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public class Fixtures {
 

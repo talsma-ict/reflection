@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 /**
  * Interface that declares how a particular bean property can be accessed.
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public interface BeanProperty {
 

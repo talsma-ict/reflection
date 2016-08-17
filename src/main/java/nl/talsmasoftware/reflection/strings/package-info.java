@@ -23,6 +23,6 @@
  * <p>
  * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 package nl.talsmasoftware.reflection.strings;

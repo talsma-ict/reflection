@@ -40,7 +40,7 @@ import static java.util.Collections.*;
  * <p>
  * Class diagram:<br><center><img src="BeanReflectionSupport.svg" alt="class diagram"></center>
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public final class BeanReflectionSupport {
     private static final Logger LOGGER = Logger.getLogger(BeanReflectionSupport.class.getName());
