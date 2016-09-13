@@ -17,6 +17,8 @@
 
 package nl.talsmasoftware.reflection.methods;
 
+import nl.talsmasoftware.reflection.classes.ClassReflectionSupport;
+
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,11 +52,9 @@ public final class MethodReflectionSupport {
      * @return The found method or <code>null</code> if it could not be found.
      */
     public static Method findMethod(String className, String methodName, Class<?>... parameterTypes) {
-        try { // TODO delegate class loading to other utility that tries different classloaders first before giving up!
-            return Class.forName(className).getMethod(methodName, parameterTypes);
-        } catch (ClassNotFoundException cnfe) {
-            LOGGER.log(Level.FINEST, "Could not load class \"{0}\".",
-                    new Object[]{className, methodName, parameterTypes, cnfe.getMessage(), cnfe});
+        try {
+            final Class<?> foundClass = ClassReflectionSupport.findClass(className);
+            return foundClass != null ? foundClass.getMethod(methodName, parameterTypes) : null;
         } catch (NoSuchMethodException nsme) {
             LOGGER.log(Level.FINEST, "Method \"{1}\" was not found in class \"{0}\".",
                     new Object[]{className, methodName, parameterTypes, nsme.getMessage(), nsme});
