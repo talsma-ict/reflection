@@ -17,8 +17,8 @@
 
 package nl.talsmasoftware.reflection;
 
-import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 import nl.talsmasoftware.reflection.errorhandling.MethodInvocationException;
+import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public final class Constructors {
         return getConstructor(Classes.getClass(className), Classes.getClasses(parameterTypeNames));
     }
 
-    protected static <T> Constructor<T> findConstructor(Class<T> type, Class<?>... parameterTypes) {
+    public static <T> Constructor<T> findConstructor(Class<T> type, Class<?>... parameterTypes) {
         try {
             return getConstructor(type, parameterTypes);
         } catch (ReflectionException re) {

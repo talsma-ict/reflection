@@ -128,16 +128,24 @@ public final class Methods {
         }
     }
 
+    public static Method findMethod(Class<?> type, String methodName, String... parameterTypeNames) {
+        return findMethod(type, methodName, Classes.findClasses(parameterTypeNames));
+    }
+
+    public static Method findMethod(String qualifiedMethodName, String... parameterTypeNames) {
+        return findMethod(qualifiedMethodName, Classes.findClasses(parameterTypeNames));
+    }
+
     /**
-     * Deze operatie roept de methode aan voor het opgegeven <code>subject</code>
-     * (mag <code>null</code> zijn voor statische methodes) en de opegeven <code>parameters</code>.
+     * This function calls the method for the given <code>subject</code> with the specified <code>parameters</code>.
+     * The subject may be <code>null</code> for static methods.
      *
-     * @param method     De aan te roepen methode (optioneel, de call doet niets indien <code>null</code>).
-     * @param subject    Het object om de methode op aan te roepen (optioneel, mag <code>null</code> zijn voor statische methodes).
-     * @param parameters De te gebruiken parameters voor de methode.
-     * @param <T>        Het verwachte resultaat type.
-     * @return Het resultaat van de methode of <code>null</code> indien er geen methode werd meegegeven
-     * of er een exceptie optrad tijdens de aanroep.
+     * @param method     The method to be called (required, non-<code>null</code>).
+     * @param subject    The subject to call the method on. (optional, can be <code>null</code> for static methods).
+     * @param parameters The parameters to invoke the method with.
+     * @param <T>        The expected result type.
+     * @return The method result.
+     * @throws MethodInvocationException In case there were exceptions when calling the method.
      */
     public static <T> T call(Method method, Object subject, Object... parameters) {
         try {

@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Reflection support for finding and interacting with classes.
+ * Reflection support for finding classes and interacting with them.
  *
  * @author Sjoerd Talsma
  */
@@ -139,6 +139,10 @@ public final class Classes {
         }
     }
 
+    public static <T> T createNew(Class<T> type) {
+        return createNew(type, NO_PARAMS);
+    }
+
     /**
      * @param className             The qualified name of the class to be instantiated.
      * @param constructorParameters The parameters to invoke the constructor with.
@@ -149,12 +153,21 @@ public final class Classes {
         return createNew(getClass(className), constructorParameters);
     }
 
-    public static <T> T createNew(Class<T> type) {
-        return createNew(type, NO_PARAMS);
-    }
-
     public static Object createNew(String className) {
         return createNew(getClass(className), NO_PARAMS);
+    }
+
+    public static <T> T tryCreateNew(Class<T> type, Object... constructorParameters) {
+        try {
+            return createNew(type, constructorParameters);
+        } catch (ReflectionException re) {
+            LOGGER.log(Level.FINEST, re.getMessage(), re);
+            return null;
+        }
+    }
+
+    public static <T> T tryCreateNew(Class<T> type) {
+        return tryCreateNew(type, NO_PARAMS);
     }
 
     /**
@@ -167,13 +180,11 @@ public final class Classes {
      */
     public static Object tryCreateNew(String className, Object... constructorParameters) {
         try {
-
             return createNew(className, constructorParameters);
-
         } catch (ReflectionException re) {
             LOGGER.log(Level.FINEST, re.getMessage(), re);
+            return null;
         }
-        return null;
     }
 
     public static Object tryCreateNew(String className) {
