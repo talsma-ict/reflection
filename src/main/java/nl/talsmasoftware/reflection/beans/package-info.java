@@ -17,11 +17,15 @@
 
 /**
  * The main class in this package is
- * {@link nl.talsmasoftware.reflection.beans.BeanReflectionSupport BeanReflectionSupport} providing static utility
- * methods that enable reflection of public fields and property accessor methods.
+ * {@link nl.talsmasoftware.reflection.beans.BeanReflection BeanReflection} providing static utility
+ * methods that enable reflection of JavaBean properties.
+ * <p>
+ * This package conforms to the JavaBean convention, with one important distinction: support for public fields.
+ * A property can be 'backed' by getter/setter methods, but also by a public field. The field is used directly when
+ * an appropriate getter/setter method cannot be found.
  * <p>
  * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 package nl.talsmasoftware.reflection.beans;

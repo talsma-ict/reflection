@@ -14,15 +14,19 @@
  * limitations under the License.
  *
  */
+package nl.talsmasoftware.reflection.errorhandling;
 
 /**
- * This package is intended for String related classes in combination with reflection.
- * For example, there is a {@link nl.talsmasoftware.reflection.strings.ToStringBuilder ToStringBuilder}
- * that will reflect appended values if the toString() result of the value equals the standard
- * <code>java.lang.Object</code> (class@hash) representation.
- * <p>
- * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
- *
  * @author Sjoerd Talsma
  */
-package nl.talsmasoftware.reflection.strings;
+public class MethodInvocationException extends ReflectionException {
+
+    public MethodInvocationException(String message) {
+        this(message, null);
+    }
+
+    public MethodInvocationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+}

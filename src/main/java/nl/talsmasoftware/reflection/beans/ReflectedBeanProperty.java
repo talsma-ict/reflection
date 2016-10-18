@@ -30,7 +30,7 @@ import static java.lang.reflect.Modifier.isFinal;
  * Class to abstract interaction with reflected properties in.
  * These can be mapped on public fields or getter / setter methods (or both).
  *
- * @author <a href="mailto:info@talsma-software.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 final class ReflectedBeanProperty implements BeanProperty {
     private static final Logger LOGGER = Logger.getLogger(ReflectedBeanProperty.class.getName());
