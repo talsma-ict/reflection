@@ -16,7 +16,7 @@
 
 package nl.talsmasoftware.reflection.strings;
 
-import nl.talsmasoftware.reflection.beans.BeanReflectionSupport;
+import nl.talsmasoftware.reflection.beans.BeanReflection;
 
 import java.io.Serializable;
 import java.util.IdentityHashMap;
@@ -104,7 +104,7 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      * @return Reference to this builder for method-chaining purposes.
      */
     private ToStringBuilder appendReflectedPropertiesOf(Object source) {
-        for (Map.Entry<String, Object> property : BeanReflectionSupport.getPropertyValues(source).entrySet()) {
+        for (Map.Entry<String, Object> property : BeanReflection.getPropertyValues(source).entrySet()) {
             final String name = property.getKey();
             if (!"class".equals(name)) { // class zit al in de builder prefix.
                 this.append(name, property.getValue());
