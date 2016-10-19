@@ -123,7 +123,7 @@ public final class Methods {
      * Since normally the methods contained in any class do not change, it is advised to keep a reference to the
      * resulting Method around if you intend to re-use it in a short while from now.
      *
-     * @param qualifiedMethodName The fully-qualified name of the method to find (full classname + "." + fqn).
+     * @param qualifiedMethodName The fully-qualified name of the method to find (full classname + "." + methodName).
      * @param parameterTypes      The parameter types you wish to pass to the class.
      * @return The found method or <code>null</code> if it could not be found.
      * @see #getMethod(String, Class[])
