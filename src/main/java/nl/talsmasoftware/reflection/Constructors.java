@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static nl.talsmasoftware.reflection.Classes.NO_TYPES;
+
 /**
  * A utility class for all kinds of reflection utility function that deal with {@link Constructor class constructors}.
  *
@@ -69,6 +71,10 @@ public final class Constructors {
         return getConstructor(Classes.getClass(className), Classes.getClasses(parameterTypeNames));
     }
 
+    public static Constructor<?> getConstructor(String className) {
+        return getConstructor(Classes.getClass(className), NO_TYPES);
+    }
+
     public static <T> Constructor<T> findConstructor(Class<T> type, Class<?>... parameterTypes) {
         try {
             return getConstructor(type, parameterTypes);
@@ -84,6 +90,10 @@ public final class Constructors {
 
     public static Constructor<?> findConstructor(String className, String... parameterTypeNames) {
         return findConstructor(Classes.findClass(className), Classes.findClasses(parameterTypeNames));
+    }
+
+    public static Constructor<?> findConstructor(String className) {
+        return findConstructor(Classes.findClass(className), NO_TYPES);
     }
 
 }

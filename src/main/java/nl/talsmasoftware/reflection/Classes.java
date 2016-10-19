@@ -33,8 +33,8 @@ import java.util.logging.Logger;
  */
 public final class Classes {
     private static final Logger LOGGER = Logger.getLogger(Classes.class.getName());
-    private static final Object[] NO_PARAMS = new Object[0];
-    private static final Class[] NO_TYPES = new Class[0];
+    static final Object[] NO_PARAMS = new Object[0];
+    static final Class[] NO_TYPES = new Class[0];
 
     /**
      * Private constructor to avoid instantiation of this class.
