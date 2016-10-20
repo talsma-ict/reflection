@@ -76,7 +76,7 @@
         <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
         <maven-scm-plugin.version>1.9</maven-scm-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.6</nexus-staging-maven-plugin.version>
-        <buildnumber-maven-plugin.version>1.1</buildnumber-maven-plugin.version>
+        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <umldoclet.version>1.0.2</umldoclet.version>
     </properties>
 
@@ -113,6 +113,7 @@
                         </goals>
                         <configuration>
                             <buildNumberPropertyName>git.revision</buildNumberPropertyName>
+                            <timestampFormat>{0,date,yyyy-MM-dd'T'HH:mm:ss.SSSZ}</timestampFormat>
                             <timestampPropertyName>build.timestamp</timestampPropertyName>
                         </configuration>
                     </execution>
