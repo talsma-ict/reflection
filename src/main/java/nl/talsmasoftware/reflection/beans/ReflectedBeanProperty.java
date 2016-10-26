@@ -18,13 +18,20 @@
 package nl.talsmasoftware.reflection.beans;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.reflect.Modifier.isFinal;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
 
 /**
  * Class to abstract interaction with reflected properties in.
@@ -37,6 +44,7 @@ final class ReflectedBeanProperty implements BeanProperty {
 
     private final PropertyDescriptor descriptor;
     private final Field field;
+    private volatile Collection annotations;
 
     ReflectedBeanProperty(PropertyDescriptor descriptor, Field field) {
         if (descriptor == null && field == null) {
@@ -118,9 +126,37 @@ final class ReflectedBeanProperty implements BeanProperty {
         return written;
     }
 
+    /**
+     * Find and return the annotations on this bean property (on accessible field and/or descriptor method(s)).
+     *
+     * @return The annotations on this reflected bean property.
+     */
+    public Collection<Annotation> annotations() {
+        if (annotations == null) {
+            Collection<Annotation> foundAnnotations = new LinkedHashSet<Annotation>();
+            if (descriptor != null) {
+                if (descriptor.getReadMethod() != null)
+                    foundAnnotations.addAll(asList(descriptor.getReadMethod().getDeclaredAnnotations()));
+                if (descriptor.getWriteMethod() != null)
+                    foundAnnotations.addAll(asList(descriptor.getWriteMethod().getDeclaredAnnotations()));
+            }
+            if (field != null) foundAnnotations.addAll(asList(field.getDeclaredAnnotations()));
+            annotations = unmodifiableCopy(foundAnnotations);
+        }
+        return annotations;
+    }
+
     @Override
     public String toString() {
         return getName() + "{readable=" + isReadable() + ", writeable=" + isWriteable() + '}';
     }
 
+    private static <T> Collection<T> unmodifiableCopy(Collection<T> coll) {
+        if (coll == null) return null;
+        else if (coll.isEmpty()) return emptySet();
+        else if (coll.size() == 1) return singleton(coll.iterator().next());
+        final List<T> copy = new ArrayList<T>(coll.size());
+        copy.addAll(coll);
+        return unmodifiableList(copy);
+    }
 }

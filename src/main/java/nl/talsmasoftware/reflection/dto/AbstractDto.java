@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static nl.talsmasoftware.reflection.beans.BeanReflectionSupport.getPropertyValues;
-import static nl.talsmasoftware.reflection.beans.BeanReflectionSupport.setPropertyValue;
+import static nl.talsmasoftware.reflection.beans.BeanReflection.getPropertyValues;
+import static nl.talsmasoftware.reflection.beans.BeanReflection.setPropertyValue;
 
 /**
  * Abstract base class for DTO (data transfer objects) where {@link Object objects} are purely used for data

@@ -17,103 +17,124 @@
 
 package nl.talsmasoftware.reflection.beans;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.lang.annotation.*;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class BeanReflectionSupportTest {
+public class BeanReflectionTest {
 
     @Before
     @After
     public void clearCaches() {
-        BeanReflectionSupport.flushCaches();
+        BeanReflection.flushCaches();
     }
 
     @Test
     public void testGetPropertyValue_nulls() {
-        assertThat(BeanReflectionSupport.getPropertyValue(null, null), is(nullValue()));
-        assertThat(BeanReflectionSupport.getPropertyValue(null, "property"), is(nullValue()));
-        assertThat(BeanReflectionSupport.getPropertyValue(new Object(), null), is(nullValue()));
-        assertThat(BeanReflectionSupport.getPropertyValue(new Object(), ""), is(nullValue()));
+        assertThat(BeanReflection.getPropertyValue(null, null), is(nullValue()));
+        assertThat(BeanReflection.getPropertyValue(null, "property"), is(nullValue()));
+        assertThat(BeanReflection.getPropertyValue(new Object(), null), is(nullValue()));
+        assertThat(BeanReflection.getPropertyValue(new Object(), ""), is(nullValue()));
     }
 
     @Test
     public void testGetPropertyValue_notFound() {
-        assertThat(BeanReflectionSupport.getPropertyValue(new Object(), "notFound"), is(nullValue()));
+        assertThat(BeanReflection.getPropertyValue(new Object(), "notFound"), is(nullValue()));
     }
 
     @Test
     public void testGetPropertyValue() {
-        assertThat(BeanReflectionSupport.getPropertyValue(new Object(), "class"), is(equalTo((Object) Object.class)));
+        assertThat(BeanReflection.getPropertyValue(new Object(), "class"), is(equalTo((Object) Object.class)));
     }
 
     @Test
     public void testSetPropertyValue_class() {
-        assertThat(BeanReflectionSupport.setPropertyValue(new Object(), "class", String.class), is(false));
+        assertThat(BeanReflection.setPropertyValue(new Object(), "class", String.class), is(false));
     }
 
     @Test
     public void testGetPropertyValue_withGetter() {
-        assertThat(BeanReflectionSupport.getPropertyValue(new BeanWithGetter("a"), "value"), is(equalTo((Object) "a")));
+        assertThat(BeanReflection.getPropertyValue(new BeanWithGetter("a"), "value"), is(equalTo((Object) "a")));
     }
 
     @Test
     public void testGetPropertyValue_booleanProperty() {
-        assertThat(BeanReflectionSupport.getPropertyValue(new BeanWithBooleanProperty(true), "indication"), is(equalTo((Object) true)));
+        assertThat(BeanReflection.getPropertyValue(new BeanWithBooleanProperty(true), "indication"), is(equalTo((Object) true)));
     }
 
     @Test
     public void testGetPropertyValue_accessorsAndFields() {
         BeanWithAccessorsAndFields bean = new BeanWithAccessorsAndFields("a", true);
-        assertThat(BeanReflectionSupport.getPropertyValue(bean, "value"), is(equalTo((Object) "a")));
-        assertThat(BeanReflectionSupport.getPropertyValue(bean, "indication"), is(equalTo((Object) true)));
-        assertThat(BeanReflectionSupport.getPropertyValue(bean, "value2"), is(equalTo((Object) "a")));
-        assertThat(BeanReflectionSupport.getPropertyValue(bean, "indication2"), is(equalTo((Object) true)));
+        assertThat(BeanReflection.getPropertyValue(bean, "value"), is(equalTo((Object) "a")));
+        assertThat(BeanReflection.getPropertyValue(bean, "indication"), is(equalTo((Object) true)));
+        assertThat(BeanReflection.getPropertyValue(bean, "value2"), is(equalTo((Object) "a")));
+        assertThat(BeanReflection.getPropertyValue(bean, "indication2"), is(equalTo((Object) true)));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testGetBeanProperties_mutability() {
-        Iterator<BeanProperty> it = BeanReflectionSupport.getBeanProperties(BeanWithAccessorsAndFields.class).iterator();
+        Iterator<BeanProperty> it = BeanReflection.getBeanProperties(BeanWithAccessorsAndFields.class).iterator();
         it.next();
         it.remove();
+    }
+
+    static BeanProperty find(Iterable<? extends BeanProperty> props, String name) {
+        BeanProperty found = null;
+        if (props != null && name != null) for (BeanProperty prop : props) {
+            if (name.equals(prop.getName())) {
+                found = prop;
+                break;
+            }
+        }
+        return found;
+    }
+
+    @Test
+    public void testBeanPropertyAnnotations() {
+        Collection<BeanProperty> props = BeanReflection.getBeanProperties(SubClass.class);
+        Collection<Annotation> annotations = find(props, "value").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
+        annotations = find(props, "value2").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
+        annotations = find(props, "value3").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
     }
 
     @Test
     public void testGetPropertyValues_null() {
         Map<String, Object> expected = Collections.emptyMap();
-        assertThat(BeanReflectionSupport.getPropertyValues(null), is(equalTo(expected)));
+        assertThat(BeanReflection.getPropertyValues(null), is(equalTo(expected)));
     }
 
     @Test
     public void testGetPropertyValues() {
         Map<String, Object> expected = new HashMap<String, Object>();
         expected.put("class", Object.class);
-        assertThat("Properties of new Object", BeanReflectionSupport.getPropertyValues(new Object()), is(equalTo(expected)));
+        assertThat("Properties of new Object", BeanReflection.getPropertyValues(new Object()), is(equalTo(expected)));
 
-        assertThat(BeanReflectionSupport.getPropertyValues("String value").entrySet(), hasSize(3));
-        assertThat(BeanReflectionSupport.getPropertyValues("String value").get("class"), is(equalTo((Object) String.class)));
-        assertThat(BeanReflectionSupport.getPropertyValues("String value").get("empty"), is(equalTo((Object) Boolean.FALSE)));
-        assertThat(BeanReflectionSupport.getPropertyValues("String value").get("bytes"), is(instanceOf(byte[].class)));
+        assertThat(BeanReflection.getPropertyValues("String value").entrySet(), hasSize(3));
+        assertThat(BeanReflection.getPropertyValues("String value").get("class"), is(equalTo((Object) String.class)));
+        assertThat(BeanReflection.getPropertyValues("String value").get("empty"), is(equalTo((Object) Boolean.FALSE)));
+        assertThat(BeanReflection.getPropertyValues("String value").get("bytes"), is(instanceOf(byte[].class)));
 
         expected.clear();
         expected.put("class", BeanWithGetter.class);
         expected.put("value", "val");
         assertThat("Properties of BeanWithGetter",
-                BeanReflectionSupport.getPropertyValues(new BeanWithGetter("val")), is(equalTo(expected)));
+                BeanReflection.getPropertyValues(new BeanWithGetter("val")), is(equalTo(expected)));
 
         expected.clear();
         expected.put("class", BeanWithBooleanProperty.class);
         expected.put("indication", Boolean.FALSE);
         assertThat("Properties of BeanWithBooleanProperty",
-                BeanReflectionSupport.getPropertyValues(new BeanWithBooleanProperty(false)), is(equalTo(expected)));
+                BeanReflection.getPropertyValues(new BeanWithBooleanProperty(false)), is(equalTo(expected)));
 
         expected.clear();
         expected.put("class", BeanWithAccessorsAndFields.class);
@@ -122,19 +143,19 @@ public class BeanReflectionSupportTest {
         expected.put("value", "String value");
         expected.put("value2", "String value");
         assertThat("Properties of BeanWithAccessorsAndFields",
-                BeanReflectionSupport.getPropertyValues(new BeanWithAccessorsAndFields("String value", true)), is(equalTo(expected)));
+                BeanReflection.getPropertyValues(new BeanWithAccessorsAndFields("String value", true)), is(equalTo(expected)));
     }
 
     @Test
     public void testSetPropertyValue_finalField() {
         BeanWithAccessorsAndFields bean = new BeanWithAccessorsAndFields("old value", false);
-        assertThat(BeanReflectionSupport.setPropertyValue(bean, "value", "new value"), is(equalTo(false)));
+        assertThat(BeanReflection.setPropertyValue(bean, "value", "new value"), is(equalTo(false)));
         assertThat(bean.value, is(equalTo("old value")));
     }
 
     @Test
     public void testSubclassReflection() {
-        Map<String, Object> properties = BeanReflectionSupport.getPropertyValues(new SubClass("some value", true));
+        Map<String, Object> properties = BeanReflection.getPropertyValues(new SubClass("some value", true));
         assertThat(properties.keySet(), containsInAnyOrder("class", "value", "value2", "value3", "indication", "indication2"));
         assertThat(properties.get("class"), equalTo((Object) SubClass.class));
         assertThat(properties.get("value"), equalTo((Object) "some value"));
@@ -151,6 +172,7 @@ public class BeanReflectionSupportTest {
             this.value = value;
         }
 
+        @Readable
         public String getValue() {
             return value;
         }
@@ -163,13 +185,16 @@ public class BeanReflectionSupportTest {
             this.indication = indication;
         }
 
+        @Readable
         public boolean isIndication() {
             return indication;
         }
     }
 
     public static class BeanWithAccessorsAndFields {
+        @Readable
         public final String value;
+        @Readable
         public final boolean indication;
 
         public BeanWithAccessorsAndFields(String value, boolean indication) {
@@ -177,17 +202,19 @@ public class BeanReflectionSupportTest {
             this.indication = indication;
         }
 
+        @Readable
         public String getValue2() {
             return value;
         }
 
+        @Readable
         public boolean isIndication2() {
             return indication;
         }
     }
 
     public static class SubClass extends BeanWithAccessorsAndFields {
-
+        @Readable
         public final String value3;
 
         public SubClass(String value, boolean indication) {
@@ -197,4 +224,15 @@ public class BeanReflectionSupportTest {
 
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Readable {
+
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Writeable {
+
+    }
 }

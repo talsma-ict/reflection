@@ -16,7 +16,9 @@
 
 package nl.talsmasoftware.reflection.beans;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 /**
  * Interface that declares how a particular bean property can be accessed.
@@ -75,5 +77,12 @@ public interface BeanProperty {
      * or <code>false</code> it that was not possible for some reason.
      */
     boolean write(Object bean, Object propertyValue);
+
+    /**
+     * This method returns any declared annotations for the property (e.g. field or getter/setter methods).
+     *
+     * @return The annotations declared for the property.
+     */
+    Collection<Annotation> annotations();
 
 }

@@ -23,6 +23,7 @@ import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +34,8 @@ import java.util.logging.Logger;
  */
 public final class Classes {
     private static final Logger LOGGER = Logger.getLogger(Classes.class.getName());
-    private static final Object[] NO_PARAMS = new Object[0];
-    private static final Class[] NO_TYPES = new Class[0];
+    static final Object[] NO_PARAMS = new Object[0];
+    static final Class[] NO_TYPES = new Class[0];
 
     /**
      * Private constructor to avoid instantiation of this class.
@@ -133,7 +134,8 @@ public final class Classes {
             final Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
             throw new InstantiatingException("Exception thrown from constructor of " + type + ": " + cause.getMessage(), ite);
         } catch (InstantiationException ie) {
-            throw new InstantiatingException("Cannot instantiate " + type + ".", ie);
+            final String abstr = Modifier.isAbstract(type.getModifiers()) ? "abstract " : "";
+            throw new InstantiatingException("Cannot instantiate " + abstr + type + ".", ie);
         } catch (IllegalAccessException e) {
             throw new InstantiatingException("Not allowed to instantiate object of " + type + ".", e);
         }

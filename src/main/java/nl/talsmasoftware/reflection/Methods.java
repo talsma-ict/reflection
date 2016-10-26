@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static nl.talsmasoftware.reflection.Classes.NO_TYPES;
 import static nl.talsmasoftware.reflection.Classes.typesOf;
 
 /**
@@ -95,6 +96,14 @@ public final class Methods {
         return getMethod(type, methodName, Classes.getClasses(parameterTypeNames));
     }
 
+    public static Method getMethod(Class<?> type, String methodName) {
+        return getMethod(type, methodName, NO_TYPES);
+    }
+
+    public static Method getMethod(String qualifiedMethodName) {
+        return getMethod(qualifiedMethodName, NO_TYPES);
+    }
+
     public static Method findMethod(Class<?> type, String methodName, Class<?>... parameterTypes) {
         try {
             return getMethod(type, methodName, parameterTypes);
@@ -114,7 +123,7 @@ public final class Methods {
      * Since normally the methods contained in any class do not change, it is advised to keep a reference to the
      * resulting Method around if you intend to re-use it in a short while from now.
      *
-     * @param qualifiedMethodName The fully-qualified name of the method to find (full classname + "." + fqn).
+     * @param qualifiedMethodName The fully-qualified name of the method to find (full classname + "." + methodName).
      * @param parameterTypes      The parameter types you wish to pass to the class.
      * @return The found method or <code>null</code> if it could not be found.
      * @see #getMethod(String, Class[])
@@ -134,6 +143,14 @@ public final class Methods {
 
     public static Method findMethod(String qualifiedMethodName, String... parameterTypeNames) {
         return findMethod(qualifiedMethodName, Classes.findClasses(parameterTypeNames));
+    }
+
+    public static Method findMethod(Class<?> type, String methodName) {
+        return findMethod(type, methodName, NO_TYPES);
+    }
+
+    public static Method findMethod(String qualifiedMethodName) {
+        return findMethod(qualifiedMethodName, NO_TYPES);
     }
 
     /**
