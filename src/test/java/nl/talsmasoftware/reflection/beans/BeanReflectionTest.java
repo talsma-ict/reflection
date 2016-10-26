@@ -17,14 +17,13 @@
 
 package nl.talsmasoftware.reflection.beans;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.lang.annotation.*;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -84,6 +83,28 @@ public class BeanReflectionTest {
         Iterator<BeanProperty> it = BeanReflection.getBeanProperties(BeanWithAccessorsAndFields.class).iterator();
         it.next();
         it.remove();
+    }
+
+    static BeanProperty find(Iterable<? extends BeanProperty> props, String name) {
+        BeanProperty found = null;
+        if (props != null && name != null) for (BeanProperty prop : props) {
+            if (name.equals(prop.getName())) {
+                found = prop;
+                break;
+            }
+        }
+        return found;
+    }
+
+    @Test
+    public void testBeanPropertyAnnotations() {
+        Collection<BeanProperty> props = BeanReflection.getBeanProperties(SubClass.class);
+        Collection<Annotation> annotations = find(props, "value").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
+        annotations = find(props, "value2").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
+        annotations = find(props, "value3").annotations();
+        assertThat(annotations, hasItem(Matchers.<Annotation>instanceOf(Readable.class)));
     }
 
     @Test
@@ -151,6 +172,7 @@ public class BeanReflectionTest {
             this.value = value;
         }
 
+        @Readable
         public String getValue() {
             return value;
         }
@@ -163,13 +185,16 @@ public class BeanReflectionTest {
             this.indication = indication;
         }
 
+        @Readable
         public boolean isIndication() {
             return indication;
         }
     }
 
     public static class BeanWithAccessorsAndFields {
+        @Readable
         public final String value;
+        @Readable
         public final boolean indication;
 
         public BeanWithAccessorsAndFields(String value, boolean indication) {
@@ -177,17 +202,19 @@ public class BeanReflectionTest {
             this.indication = indication;
         }
 
+        @Readable
         public String getValue2() {
             return value;
         }
 
+        @Readable
         public boolean isIndication2() {
             return indication;
         }
     }
 
     public static class SubClass extends BeanWithAccessorsAndFields {
-
+        @Readable
         public final String value3;
 
         public SubClass(String value, boolean indication) {
@@ -197,4 +224,15 @@ public class BeanReflectionTest {
 
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Readable {
+
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Writeable {
+
+    }
 }

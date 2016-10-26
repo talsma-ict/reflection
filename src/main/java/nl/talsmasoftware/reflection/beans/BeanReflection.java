@@ -15,13 +15,14 @@
  */
 package nl.talsmasoftware.reflection.beans;
 
+import nl.talsmasoftware.reflection.Classes;
+
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -226,26 +227,11 @@ public final class BeanReflection {
      */
     public static <T> T createBean(Class<T> beanType, Map<String, Object> propertyValues) {
         if (beanType == null) throw new IllegalArgumentException("Bean type was null.");
-        try {
-            T bean = beanType.getConstructor().newInstance();
-            if (propertyValues != null) for (Map.Entry<String, Object> propertyValue : propertyValues.entrySet()) {
-                setPropertyValue(bean, propertyValue.getKey(), propertyValue.getValue());
-            }
-            return bean;
-        } catch (NoSuchMethodException nsme) {
-            throw new IllegalArgumentException("Bean type " + beanType.getSimpleName() +
-                    " does not have an accessible default constructor.", nsme);
-        } catch (InstantiationException ie) {
-            throw new IllegalArgumentException("Bean type " + beanType.getSimpleName() +
-                    " could not be instantiated. Could it be that it is an abstract type?", ie);
-        } catch (IllegalAccessException iae) {
-            throw new IllegalArgumentException("Bean type " + beanType.getSimpleName() +
-                    " does not have an accessible default constructor.", iae);
-        } catch (InvocationTargetException ite) {
-            throw ite.getCause() instanceof RuntimeException ? (RuntimeException) ite.getCause()
-                    : new IllegalStateException("Exception occurred while creating a new instance of "
-                    + beanType.getSimpleName() + ": " + ite.getMessage(), ite.getCause());
+        T bean = Classes.createNew(beanType);
+        if (propertyValues != null) for (Map.Entry<String, Object> propertyValue : propertyValues.entrySet()) {
+            setPropertyValue(bean, propertyValue.getKey(), propertyValue.getValue());
         }
+        return bean;
     }
 
     /**
