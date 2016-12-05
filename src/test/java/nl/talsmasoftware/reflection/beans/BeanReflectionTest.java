@@ -20,6 +20,7 @@ package nl.talsmasoftware.reflection.beans;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.annotation.*;
@@ -165,6 +166,61 @@ public class BeanReflectionTest {
         assertThat(properties.get("indication2"), equalTo((Object) true));
     }
 
+    /**
+     * Tests whether nested properties can also be accessed.
+     */
+    @Test
+    public void testGetNestedPropertyValues() {
+        NestedProperties obj = new NestedProperties(
+                "level 0", new NestedProperties(
+                "level 1", new NestedProperties(
+                "level 2", new NestedProperties(
+                "level 3", new NestedProperties()
+        ))));
+        assertThat(BeanReflection.getPropertyValue(obj, "value"), is((Object) "level 0"));
+        assertThat(BeanReflection.getPropertyValue(obj, "nested.value"), is((Object) "level 1"));
+        assertThat(BeanReflection.getPropertyValue(obj, "nested.nested.value"), is((Object) "level 2"));
+        assertThat(BeanReflection.getPropertyValue(obj, "nested.nested.nested.value"), is((Object) "level 3"));
+    }
+
+    /**
+     * Tests whether nested properties can also be changed.
+     */
+    @Test
+    public void testSetNestedPropertyValues() {
+        NestedProperties obj = new NestedProperties(
+                "level 0", new NestedProperties(
+                "level 1", new NestedProperties(
+                "level 2", new NestedProperties(
+                "level 3", new NestedProperties()
+        ))));
+        BeanReflection.setPropertyValue(obj, "value", "changed 0");
+        BeanReflection.setPropertyValue(obj, "nested.value", "changed 1");
+        BeanReflection.setPropertyValue(obj, "nested.nested.value", "changed 2");
+        BeanReflection.setPropertyValue(obj, "nested.nested.nested.value", "changed 3");
+
+        assertThat(obj.value, is("changed 0"));
+        assertThat(obj.nested.value, is("changed 1"));
+        assertThat(obj.nested.nested.value, is("changed 2"));
+        assertThat(obj.nested.nested.nested.value, is("changed 3"));
+    }
+
+    @Test
+    @Ignore //TODO
+    public void testGetArrayIndex() {
+        BeanWithArray bean = new BeanWithArray("element 0", "element 1");
+        assertThat(BeanReflection.getPropertyValue(bean, "array[0]"), is((Object) "element 0"));
+        assertThat(BeanReflection.getPropertyValue(bean, "array.1"), is((Object) "element 1"));
+    }
+
+    @Test
+    @Ignore //TODO
+    public void testGetIterableIndex() {
+        BeanWithIterable bean = new BeanWithIterable("element 0", "element 1");
+        assertThat(BeanReflection.getPropertyValue(bean, "iterable[0]"), is((Object) "element 0"));
+        assertThat(BeanReflection.getPropertyValue(bean, "iterable.1"), is((Object) "element 1"));
+    }
+
     public static class BeanWithGetter {
         private final String value;
 
@@ -221,7 +277,36 @@ public class BeanReflectionTest {
             super(value, indication);
             this.value3 = value;
         }
+    }
 
+    public static class NestedProperties {
+        public String value;
+        public NestedProperties nested;
+
+        public NestedProperties() {
+            this(null, null);
+        }
+
+        public NestedProperties(String value, NestedProperties nested) {
+            this.value = value;
+            this.nested = nested;
+        }
+    }
+
+    public static class BeanWithArray {
+        public Object[] array;
+
+        public BeanWithArray(Object... content) {
+            this.array = content;
+        }
+    }
+
+    public static class BeanWithIterable {
+        public Iterable<Object> iterable;
+
+        public BeanWithIterable(Object... content) {
+            this.iterable = new LinkedHashSet<Object>(Arrays.asList(content));
+        }
     }
 
     @Retention(RetentionPolicy.RUNTIME)

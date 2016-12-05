@@ -151,21 +151,38 @@ public final class BeanReflection {
     }
 
     /**
+     * Looks for a property (possibly recursive) and returns the reference containing the containing bean and the
+     * property. This is necessary because the containing bean can be a different one from the specified bean (due to
+     * one or more inner properties separated by dots).
+     *
+     * @param bean         The outer bean to obtain the property reference for.
+     * @param propertyName The name of the property to obtain from the bean.
+     * @return The propertey reference that can be accessed or <code>null</code> if not found.
+     */
+    private static ReflectedPropertyReference findPropertyReference(final Object bean, final String propertyName) {
+        ReflectedPropertyReference found = null;
+        if (bean != null && propertyName != null) {
+            final int dotIdx = propertyName.lastIndexOf('.');
+            final Object src = dotIdx < 0 ? bean : getPropertyValue(bean, propertyName.substring(0, dotIdx));
+            final BeanProperty reflectedProperty = reflectedPropertiesOf(src)
+                    .get(dotIdx < 0 ? propertyName : propertyName.substring(dotIdx + 1));
+            if (reflectedProperty != null) found = new ReflectedPropertyReference(src, reflectedProperty);
+        }
+        if (found == null) LOGGER.log(Level.FINEST,
+                "Property \"{0}\" not found in object: {1}", new Object[]{propertyName, bean});
+        return found;
+    }
+
+    /**
      * This method returns a property value for a specific object instance.
      *
      * @param bean         The object instance to return the requested property value for.
      * @param propertyName The name of the requested bean property.
      * @return The value of the property or <code>null</code> in case it could not be reflected.
      */
-    public static Object getPropertyValue(Object bean, String propertyName) {
-        Object propertyValue = null;
-        final ReflectedBeanProperty reflectedProperty = reflectedPropertiesOf(bean).get(propertyName);
-        if (reflectedProperty == null) {
-            LOGGER.log(Level.FINEST, "Property \"{0}\" not found in object: {1}", new Object[]{propertyName, bean});
-        } else {
-            propertyValue = reflectedProperty.read(bean);
-        }
-        return propertyValue;
+    public static Object getPropertyValue(final Object bean, final String propertyName) {
+        final ReflectedPropertyReference ref = findPropertyReference(bean, propertyName);
+        return ref != null ? ref.read() : null;
     }
 
     /**
@@ -180,14 +197,8 @@ public final class BeanReflection {
      * or <code>false</code> if this was not possibile for some reason.
      */
     public static boolean setPropertyValue(Object bean, String propertyName, Object propertyValue) {
-        boolean result = false;
-        final ReflectedBeanProperty reflectedProperty = reflectedPropertiesOf(bean).get(propertyName);
-        if (reflectedProperty == null) {
-            LOGGER.log(Level.FINEST, "Property \"{0}\" not found in object: {1}", new Object[]{propertyName, bean});
-        } else {
-            result = reflectedProperty.write(bean, propertyValue);
-        }
-        return result;
+        final ReflectedPropertyReference ref = findPropertyReference(bean, propertyName);
+        return ref != null && ref.write(propertyValue);
     }
 
     /**
