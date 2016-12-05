@@ -159,18 +159,21 @@ public final class BeanReflection {
      * @param propertyName The name of the property to obtain from the bean.
      * @return The propertey reference that can be accessed or <code>null</code> if not found.
      */
-    private static ReflectedPropertyReference findPropertyReference(final Object bean, final String propertyName) {
-        ReflectedPropertyReference found = null;
+    private static ResolvedAccessor findPropertyAccessor(final Object bean, final String propertyName) {
+        ResolvedAccessor accessor = null;
         if (bean != null && propertyName != null) {
-            final int dotIdx = propertyName.lastIndexOf('.');
-            final Object src = dotIdx < 0 ? bean : getPropertyValue(bean, propertyName.substring(0, dotIdx));
-            final BeanProperty reflectedProperty = reflectedPropertiesOf(src)
-                    .get(dotIdx < 0 ? propertyName : propertyName.substring(dotIdx + 1));
-            if (reflectedProperty != null) found = new ReflectedPropertyReference(src, reflectedProperty);
+            Object src = bean;
+            String propName = propertyName.replaceAll("\\[([^\\]]*)\\]", ".$1"); // Replace array notation with dot.
+            final int dotIdx = propName.lastIndexOf('.');
+            if (dotIdx >= 0) {
+                src = getPropertyValue(bean, propName.substring(0, dotIdx));
+                propName = propName.substring(dotIdx + 1);
+            }
+            accessor = ResolvedAccessor.of(src, propName, reflectedPropertiesOf(src).get(propName));
         }
-        if (found == null) LOGGER.log(Level.FINEST,
+        if (accessor == null) LOGGER.log(Level.FINEST,
                 "Property \"{0}\" not found in object: {1}", new Object[]{propertyName, bean});
-        return found;
+        return accessor;
     }
 
     /**
@@ -181,8 +184,8 @@ public final class BeanReflection {
      * @return The value of the property or <code>null</code> in case it could not be reflected.
      */
     public static Object getPropertyValue(final Object bean, final String propertyName) {
-        final ReflectedPropertyReference ref = findPropertyReference(bean, propertyName);
-        return ref != null ? ref.read() : null;
+        final ResolvedAccessor accessor = findPropertyAccessor(bean, propertyName);
+        return accessor != null ? accessor.read() : null;
     }
 
     /**
@@ -197,8 +200,8 @@ public final class BeanReflection {
      * or <code>false</code> if this was not possibile for some reason.
      */
     public static boolean setPropertyValue(Object bean, String propertyName, Object propertyValue) {
-        final ReflectedPropertyReference ref = findPropertyReference(bean, propertyName);
-        return ref != null && ref.write(propertyValue);
+        final ResolvedAccessor accessor = findPropertyAccessor(bean, propertyName);
+        return accessor != null && accessor.write(propertyValue);
     }
 
     /**

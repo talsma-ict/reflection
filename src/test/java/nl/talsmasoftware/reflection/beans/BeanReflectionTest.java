@@ -20,7 +20,6 @@ package nl.talsmasoftware.reflection.beans;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.annotation.*;
@@ -206,15 +205,26 @@ public class BeanReflectionTest {
     }
 
     @Test
-    @Ignore //TODO
     public void testGetArrayIndex() {
         BeanWithArray bean = new BeanWithArray("element 0", "element 1");
         assertThat(BeanReflection.getPropertyValue(bean, "array[0]"), is((Object) "element 0"));
         assertThat(BeanReflection.getPropertyValue(bean, "array.1"), is((Object) "element 1"));
+        bean = new BeanWithArray(1, 2, 3);
+        assertThat(BeanReflection.getPropertyValue(bean, "array.1"), is((Object) 2));
+        assertThat(BeanReflection.getPropertyValue(bean, "array.3"), is(nullValue()));
     }
 
     @Test
-    @Ignore //TODO
+    public void testSetArrayIndex() {
+        BeanWithArray bean = new BeanWithArray("element 0", "element 1");
+        assertThat(BeanReflection.setPropertyValue(bean, "array.0", "new value"), is(true));
+        assertThat(((Object[]) bean.array)[0], is((Object) "new value"));
+        bean = new BeanWithArray(1, 2, 3);
+        assertThat(BeanReflection.setPropertyValue(bean, "array[2]", 4), is(true));
+        assertThat(((int[]) bean.array)[2], is(4));
+    }
+
+    @Test
     public void testGetIterableIndex() {
         BeanWithIterable bean = new BeanWithIterable("element 0", "element 1");
         assertThat(BeanReflection.getPropertyValue(bean, "iterable[0]"), is((Object) "element 0"));
@@ -294,9 +304,13 @@ public class BeanReflectionTest {
     }
 
     public static class BeanWithArray {
-        public Object[] array;
+        public Object array;
 
-        public BeanWithArray(Object... content) {
+        public BeanWithArray(String... content) {
+            this.array = content;
+        }
+
+        public BeanWithArray(int... content) {
             this.array = content;
         }
     }
