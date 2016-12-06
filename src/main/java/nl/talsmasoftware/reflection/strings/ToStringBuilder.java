@@ -39,7 +39,7 @@ import java.util.Map;
  * <p>
  * Class diagram:<br><center><img src="ToStringBuilder.svg" alt="class diagram"></center>
 *
- * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public class ToStringBuilder implements Appendable, CharSequence, Serializable {
     private static final long serialVersionUID = 1L;

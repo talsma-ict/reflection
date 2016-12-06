@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * Test DTO objects.
  *
- * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public class AbstractDtoTest {
 

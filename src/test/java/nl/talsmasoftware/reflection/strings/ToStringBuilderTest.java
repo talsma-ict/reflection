@@ -1,21 +1,20 @@
 package nl.talsmasoftware.reflection.strings;
 
 import nl.talsmasoftware.reflection.JavaBean;
-import nl.talsmasoftware.reflection.strings.ToStringBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public class ToStringBuilderTest {
 
     @Test
     public void testConstructor_nullValue() {
         assertThat(new ToStringBuilder(null), is(notNullValue()));
-        assertThat(new ToStringBuilder(null), hasToString(equalTo(""))); // lege prefix
+        assertThat(new ToStringBuilder(null), hasToString(equalTo(""))); // empty prefix
         assertThat(new ToStringBuilder(null).append("value"), hasToString(equalTo("{\"value\"}")));
     }
 
