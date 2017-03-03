@@ -1,11 +1,11 @@
-/*
- * Copyright (C) 2016 Talsma ICT
+/**
+ * Copyright 2016-2017 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *          http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package nl.talsmasoftware.reflection.dto;
 
 import nl.talsmasoftware.reflection.strings.ToStringBuilder;
@@ -52,7 +51,7 @@ import static nl.talsmasoftware.reflection.beans.BeanReflection.setPropertyValue
  * 'override' a field with a getter / setter method? No problem! This abstract superclass will detect property accessor
  * methods and use those when applicable over the public fields.
  *
- * @author <a href="mailto:info@talsmasoftware.nl">Sjoerd Talsma</a>
+ * @author Sjoerd Talsma
  */
 public abstract class AbstractDto implements Serializable, Cloneable {
     // Recursion detection in circular data structures contained in property values:
@@ -97,7 +96,7 @@ public abstract class AbstractDto implements Serializable, Cloneable {
         } else if (!getClass().isInstance(other)) {
             return false;
         }
-        Map<Object, Object> equivalentObjects = RecursionDetectors.EQUALS.recursionDetector.get();
+        final Map<Object, Object> equivalentObjects = RecursionDetectors.EQUALS.recursionDetector.get();
         if (equivalentObjects.containsKey(this)) {
             return other == equivalentObjects.get(this); // Recursion: Intentionally don't call equals() here.
         } else try {
@@ -122,14 +121,13 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     @Override
     public int hashCode() {
         int result = 1;
-        Map<Object, Object> hashcodes = RecursionDetectors.HASHCODE.recursionDetector.get();
+        final Map<Object, Object> hashcodes = RecursionDetectors.HASHCODE.recursionDetector.get();
         if (hashcodes.containsKey(this)) { // Recursion: circular object structure; return fixed hashcode.
             return result;
         } else try {
             hashcodes.put(this, this);
-            // [ST] Note: this ONLY works if we get the properties in exactly the same order. ??Implement a guarantee??
             for (Object obj : getPropertyValues(this).values()) {
-                result = 31 * result + hashCode(obj);
+                result = result + 31 * hashCode(obj);
             }
             return result;
         } finally {
@@ -138,7 +136,7 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     }
 
     /**
-     * Implementaiton of {@link Object#toString() toString} based on the public fields and property accessor methods
+     * Implementation of {@link Object#toString() toString} based on the public fields and property accessor methods
      * of the concrete subclass. This method is delegated to the dedicated {@link ToStringBuilder} helper class that
      * also supports reflective toString resolution.
      * <p>
@@ -161,7 +159,7 @@ public abstract class AbstractDto implements Serializable, Cloneable {
      */
     @Override
     public AbstractDto clone() {
-        Map<Object, Object> clones = RecursionDetectors.CLONE.recursionDetector.get();
+        final Map<Object, Object> clones = RecursionDetectors.CLONE.recursionDetector.get();
         if (clones.containsKey(this)) { // Recursion: Return object reference to already-cloned object.
             return (AbstractDto) clones.get(this);
         } else try {
@@ -192,7 +190,8 @@ public abstract class AbstractDto implements Serializable, Cloneable {
     private Object cloneIfCloneable(String propertyName, Object propertyValue) {
         try {
 
-            return propertyValue instanceof Cloneable ? propertyValue.getClass().getMethod("clone").invoke(propertyValue)
+            return propertyValue instanceof Cloneable
+                    ? propertyValue.getClass().getMethod("clone").invoke(propertyValue)
                     : propertyValue;
 
         } catch (NoSuchMethodException nsme) {
@@ -282,9 +281,7 @@ public abstract class AbstractDto implements Serializable, Cloneable {
      * @see #equals(Object, Object)
      */
     private boolean listEquals(List<?> listA, List<?> listB) {
-        if (listA.size() != listB.size()) {
-            return false;
-        }
+        if (listA.size() != listB.size()) return false;
         for (Iterator<?> itA = listA.iterator(), itB = listB.iterator(); itA.hasNext() && itB.hasNext(); ) {
             if (!equals(itA.next(), itB.next())) {
                 return false;
