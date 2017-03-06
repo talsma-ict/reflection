@@ -105,7 +105,7 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
     private ToStringBuilder appendReflectedPropertiesOf(Object source) {
         for (Map.Entry<String, Object> property : BeanReflection.getPropertyValues(source).entrySet()) {
             final String name = property.getKey();
-            if (!"class".equals(name)) { // class zit al in de builder prefix.
+            if (!"class".equals(name)) { // class is already contained in the builder prefix.
                 this.append(name, property.getValue());
             }
         }
