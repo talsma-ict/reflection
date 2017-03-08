@@ -10,17 +10,19 @@ As there seldom is enough time to do this properly and take things like caching
 into consideration, the solutions were always sub-optimal.
 That is why this library was created.
 
-## The 'main' reflection package
+## Utility-class `Classes`
 
-This package contains:
+For finding classes and interacting with them.
 
- - *Classes* for finding classes and interacting with them.
- - *Methods* for finding methods and invoking them.
- - *Constructors* for finding constructors and invoking them.
- 
-Furthermore there are several packages:
+## Utility-class `Methods`
 
-### Package 'beans'
+For finding methods and invoking them.
+
+## Utility-class `Constructors`
+
+For finding constructors and invoking them.
+
+## Package 'beans'
 
 Containing the `BeanReflection` class, this package provides access to 
 Java's built-in `Introspector.getBeanInfo` but falls back to public field access
@@ -29,7 +31,7 @@ when available.
 Furthermore, the properties can be 'chained' safely concatenating them 
 with dots inbetween (`'.'`). Array indices are also supported by square brackets (`'['` and `']'`).
 
-### Package 'dto'
+## Package 'dto'
 
 The `AbstractDto` superclass can be extended when your class is merely a *Data Transfer Object*.
 Such DTO's are all about simply representing a datastructure and normally don't need any methods.
@@ -37,12 +39,12 @@ Subclasses merely need to provide public fields containing their datastructure
 and will be automatically provided with `equals`, `hashCode`, `toString` and `clone`
 implementations including all accessible fields from the subclass.
 
-### Package 'strings'
+## Package 'strings'
 
 The `ToStringBuilder` is a convenient builder for `toString()` representations 
 contains named field appenders. It can easily be instantiated by the static `reflect` method.
 
-### Package 'errorhandling'
+## Package 'errorhandling'
 
 Contains the exception types that can be thrown by this library,
 all subclasses of `java.lang.RuntimeException`.
