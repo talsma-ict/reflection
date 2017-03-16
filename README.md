@@ -42,7 +42,8 @@ implementations including all accessible fields from the subclass.
 ## Package 'strings'
 
 The `ToStringBuilder` is a convenient builder for `toString()` representations 
-contains named field appenders. It can easily be instantiated by the static `reflect` method.
+containing named field appenders. It is part of the reflection library because 
+it can easily be instantiated for any bean by the static `reflect` method.
 
 ## Package 'errorhandling'
 
