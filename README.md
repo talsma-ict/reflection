@@ -12,15 +12,17 @@ That is why this library was created.
 
 ## Utility-class `Classes`
 
-For finding classes and interacting with them.
+For _getting_ or _finding_ classes and interacting with them.  
+The difference between getting and finding is that a `get` operation
+throws exceptions if nothing is found, and `find` returns `null`.
 
 ## Utility-class `Methods`
 
-For finding methods and invoking them.
+For _getting_ or _finding_ methods and invoking them.
 
 ## Utility-class `Constructors`
 
-For finding constructors and invoking them.
+For _getting_ or _finding_ constructors and invoking them.
 
 ## Package 'beans'
 
