@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016-2017 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package nl.talsmasoftware.reflection.errorhandling;
-
-import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 
 /**
  * @author Sjoerd Talsma
