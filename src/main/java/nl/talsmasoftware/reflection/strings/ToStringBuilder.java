@@ -37,7 +37,7 @@ import java.util.Map;
  * <code>"TypeName{field=\"String value\", otherField=0, booleanField=false}"</code>.
  * <p>
  * Class diagram:<br><center><img src="ToStringBuilder.svg" alt="class diagram"></center>
-*
+ *
  * @author Sjoerd Talsma
  */
 public class ToStringBuilder implements Appendable, CharSequence, Serializable {
@@ -86,14 +86,14 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      * This method creates a {@link ToStringBuilder} where all public fields and property accessor methods from the
      * source object have been reflected.
      *
-     * @param source The source object for which a toString() implementation will be created based on public fields and
+     * @param source The source object for which a toString() builder will be created based on its public fields and
      *               property accessor methods.
-     * @return The builder that already has all public properties included in it.
+     * @return The builder that already has all public properties included in it, never <code>null</code>.
      */
     public static ToStringBuilder reflect(Object source) {
-        return source == null ? null
-                : source instanceof CharSequence ? new ToStringBuilder(source)
-                : new ToStringBuilder(source).appendReflectedPropertiesOf(source);
+        ToStringBuilder builder = new ToStringBuilder(source);
+        if (source == null || source instanceof CharSequence) return builder; // we're done already
+        return builder.appendReflectedPropertiesOf(source);
     }
 
     /**

@@ -145,7 +145,8 @@ public class ToStringBuilderTest {
 
     @Test
     public void testReflect_null() {
-        assertThat(ToStringBuilder.reflect(null), is(nullValue()));
+        assertThat(ToStringBuilder.reflect(null), is(notNullValue()));
+        assertThat(ToStringBuilder.reflect(null), hasToString(""));
     }
 
     @Test
