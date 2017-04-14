@@ -70,8 +70,7 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
         if (source == null || source instanceof CharSequence) {
             this.prefix = nullToEmpty(source);
         } else {
-            Class<?> type = source instanceof Class<?> ? (Class<?>) source : source.getClass();
-            this.prefix = type.getSimpleName();
+            this.prefix = TypeNameFilters.filter(classOf(source).getSimpleName());
         }
         if (parent != null) {
             this.leftBracket = parent.leftBracket;
@@ -421,6 +420,10 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      */
     private static String defaultToString(Object value) {
         return value == null ? null : value.getClass().getName() + "@" + Integer.toHexString(value.hashCode());
+    }
+
+    private static Class<?> classOf(Object value) {
+        return value == null || value instanceof Class<?> ? (Class<?>) value : value.getClass();
     }
 
     /**
