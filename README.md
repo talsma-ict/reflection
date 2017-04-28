@@ -1,4 +1,5 @@
 [![Build Status][ci-img]][ci]
+[![Coverage Status][coveralls-img]][coveralls]
 [![Released Version][maven-img]][maven]
 
 # Java reflection utilities
@@ -57,3 +58,5 @@ all subclasses of `java.lang.RuntimeException`.
   [ci]: https://travis-ci.org/talsma-ict/reflection
   [maven-img]: https://img.shields.io/maven-central/v/nl.talsmasoftware/reflection.svg
   [maven]: http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22nl.talsmasoftware%22%20AND%20a%3A%22reflection%22
+  [coveralls-img]: https://coveralls.io/repos/github/talsma-ict/reflection/badge.svg
+  [coveralls]: https://coveralls.io/github/talsma-ict/reflection
