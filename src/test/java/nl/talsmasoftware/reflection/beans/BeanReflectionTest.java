@@ -15,6 +15,7 @@
  */
 package nl.talsmasoftware.reflection.beans;
 
+import nl.talsmasoftware.test.TestUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -32,6 +33,11 @@ public class BeanReflectionTest {
     @After
     public void clearCaches() {
         BeanReflection.flushCaches();
+    }
+
+    @Test
+    public void testUnsupportedConstructor() {
+        TestUtil.assertUnsupportedConstructor(BeanReflection.class);
     }
 
     @Test
