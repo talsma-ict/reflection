@@ -16,6 +16,7 @@
 package nl.talsmasoftware.reflection;
 
 import nl.talsmasoftware.reflection.errorhandling.MethodInvocationException;
+import nl.talsmasoftware.reflection.errorhandling.MissingConstructorException;
 import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 
 import java.lang.reflect.Constructor;
@@ -53,7 +54,7 @@ public final class Constructors {
             return type.getConstructor(parameterTypes);
 
         } catch (NoSuchMethodException nsme) {
-            throw new MethodInvocationException("Appropriate constructor for " + type + " with parameter types "
+            throw new MissingConstructorException("Appropriate constructor for " + type + " with parameter types "
                     + Arrays.asList(parameterTypes) + " not found.", nsme);
         } catch (RuntimeException rte) {
             throw new MethodInvocationException("Unexpected exception looking for constructor of " + type + ": "

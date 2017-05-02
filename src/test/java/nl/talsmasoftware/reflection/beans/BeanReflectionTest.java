@@ -15,15 +15,19 @@
  */
 package nl.talsmasoftware.reflection.beans;
 
+import nl.talsmasoftware.reflection.errorhandling.MissingConstructorException;
 import nl.talsmasoftware.test.TestUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.annotation.*;
 import java.util.*;
 
+import static java.util.Collections.singletonMap;
+import static nl.talsmasoftware.reflection.beans.BeanReflection.createBean;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -233,6 +237,40 @@ public class BeanReflectionTest {
         BeanWithIterable bean = new BeanWithIterable("element 0", "element 1");
         assertThat(BeanReflection.getPropertyValue(bean, "iterable[0]"), is((Object) "element 0"));
         assertThat(BeanReflection.getPropertyValue(bean, "iterable.1"), is((Object) "element 1"));
+    }
+
+    @Test
+    public void testCreateBean_nullType() {
+        try {
+            createBean(null, new HashMap<String, Object>());
+            Assert.fail("Exception expected!");
+        } catch (RuntimeException expected) {
+            TestUtil.assertExceptionMessage(expected);
+        }
+    }
+
+    @Test
+    public void testCreateBean_nullPropertyMap() {
+        NestedProperties bean = createBean(NestedProperties.class, null);
+        assertThat(bean, is(notNullValue()));
+        assertThat(bean.value, is(nullValue()));
+        assertThat(bean.nested, is(nullValue()));
+    }
+
+    @Test(expected = MissingConstructorException.class)
+    public void testCreateBean_noDefaultConstructor() {
+        createBean(BeanWithGetter.class, null);
+    }
+
+    @Test
+    public void testCreateBean() {
+        Map<String, Object> properties = new LinkedHashMap<String, Object>();
+        properties.put("value", "first value");
+        properties.put("nested", createBean(NestedProperties.class, singletonMap("value", (Object) "nested value")));
+        NestedProperties bean = createBean(NestedProperties.class, properties);
+        assertThat(bean, is(notNullValue()));
+        assertThat(bean.value, is(equalTo("first value")));
+        assertThat(bean.nested.value, is(equalTo("nested value")));
     }
 
     public static class BeanWithGetter {
