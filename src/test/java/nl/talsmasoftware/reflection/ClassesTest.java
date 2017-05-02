@@ -15,17 +15,63 @@
  */
 package nl.talsmasoftware.reflection;
 
+import nl.talsmasoftware.reflection.errorhandling.MissingClassException;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 /**
  * @author Sjoerd Talsma
  */
 public class ClassesTest {
+    private static final String NONEXISTENT_TYPE = "nl.talsmasoftware.reflection.NonExistentType";
 
     @Test
     public void testUnsupportedConstructor() {
         TestUtil.assertUnsupportedConstructor(Classes.class);
     }
 
+    @Test
+    public void testGetClass() {
+        assertThat(Classes.getClass(String.class.getName()), is(equalTo((Class) String.class)));
+    }
+
+    @Test(expected = MissingClassException.class)
+    public void testGetClass_NotFound() {
+        Classes.getClass(NONEXISTENT_TYPE);
+    }
+
+    @Test
+    public void testGetClasses() {
+        assertThat(Classes.getClasses((String[]) null), is(equalTo(new Class[0])));
+        assertThat(Classes.getClasses(), is(equalTo(new Class[0])));
+        assertThat(Classes.getClasses(String.class.getName()), is(equalTo(new Class[]{String.class})));
+        assertThat(Classes.getClasses(Integer.class.getName(), String.class.getName()),
+                is(equalTo(new Class[]{Integer.class, String.class})));
+    }
+
+    @Test(expected = MissingClassException.class)
+    public void testGetClasses_NotFound() {
+        Classes.getClasses(String.class.getName(), NONEXISTENT_TYPE, Integer.class.getName());
+    }
+
+    @Test
+    public void testFindClass() {
+        assertThat(Classes.findClass(Boolean.class.getName()), is(equalTo((Class) Boolean.class)));
+    }
+
+    @Test
+    public void testFindClass_NotFound() {
+        assertThat(Classes.findClass(NONEXISTENT_TYPE), is(nullValue()));
+    }
+
+    @Test
+    public void testFindClasses() {
+        assertThat(Classes.findClasses((String[]) null), is(equalTo(new Class[0])));
+        assertThat(Classes.findClasses(), is(equalTo(new Class[0])));
+        assertThat(Classes.findClasses(String.class.getName(), NONEXISTENT_TYPE, Integer.class.getName()),
+                is(equalTo(new Class[]{String.class, null, Integer.class})));
+    }
 }
