@@ -76,7 +76,7 @@ public final class Methods {
      * @see #findMethod(String, Class[])
      */
     public static Method getMethod(String qualifiedMethodName, Class<?>... parameterTypes) {
-        if (qualifiedMethodName == null) throw new MethodInvocationException("Cannot locate method named <null>.");
+        if (qualifiedMethodName == null) throw new MissingMethodException("Cannot locate method named <null>.");
         final int lastDotIdx = qualifiedMethodName.lastIndexOf('.');
         if (lastDotIdx < 1) {
             throw new MissingMethodException("Method name does not contain both a type and method name: \"" +
@@ -164,13 +164,13 @@ public final class Methods {
      */
     public static <T> T call(Method method, Object subject, Object... parameters) {
         try {
-            if (method == null) throw new MethodInvocationException("Cannot invoke method <null>.");
-            else if (subject == null && !Modifier.isStatic(method.getModifiers())) {
+            if (method == null) {
+                throw new MethodInvocationException("Cannot invoke method <null>.");
+            } else if (subject == null && !Modifier.isStatic(method.getModifiers())) {
                 throw new MethodInvocationException("Cannot invoke non-static method \"" + fqn(method) + "\" on subject <null>.");
             }
 
-            @SuppressWarnings("unchecked")
-            final T result = (T) method.invoke(subject, parameters);
+            @SuppressWarnings("unchecked") final T result = (T) method.invoke(subject, parameters);
             return result;
 
         } catch (InvocationTargetException ite) {
