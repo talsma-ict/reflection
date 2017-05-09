@@ -22,6 +22,8 @@ import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,10 +53,11 @@ public final class Methods {
             throw new MissingMethodException("Method \"" + name + "\" cannot be obtained from class <null>.");
         }
         try {
-            // TODO: Smart parameter search strategies.
+
             return type.getMethod(name, parameterTypes);
+
         } catch (NoSuchMethodException nsme) {
-            throw new MissingMethodException("Method \"" + name + "\" was not found in " + type + ".", nsme);
+            return findBestMatchingMethod(nsme, type, name, parameterTypes);
         } catch (RuntimeException rte) {
             throw new MissingMethodException("Unexpected exception looking for method \"" + name + "\" in " + type + ": " + rte.getMessage(), rte);
         }
@@ -232,4 +235,31 @@ public final class Methods {
     private static String fqn(Method method) {
         return method == null ? "<null>" : method.getClass().getName() + "." + method.getName();
     }
+
+    private static Method findBestMatchingMethod(NoSuchMethodException nsme, Class<?> type, String name, Class<?>... parameterTypes) {
+        // TODO: Smart parameter search strategies.
+        for (Method method : allMethodsNamed(type, name)) if (methodMatches(method, parameterTypes)) return method;
+        throw new MissingMethodException("Method \"" + name + "\" was not found in " + type + ".", nsme);
+    }
+
+    private static Set<Method> allMethodsNamed(Class<?> type, String name) {
+        Set<Method> allMethods = new LinkedHashSet<Method>();
+        while (type != null) {
+            for (Method method : type.getDeclaredMethods()) if (method.getName().equals(name)) allMethods.add(method);
+            type = type.getSuperclass();
+        }
+        return allMethods;
+    }
+
+    private static boolean methodMatches(Method method, Class<?>... parameterTypes) {
+        // TODO account for vararg methods.
+        Class<?>[] methodTypes = method.getParameterTypes();
+        if (methodTypes.length != parameterTypes.length) return false;
+        for (int i = 0; i < parameterTypes.length; i++) {
+            if (parameterTypes[i] != null && !methodTypes[i].isAssignableFrom(parameterTypes[i])) return false;
+            else if (parameterTypes[i] == null && methodTypes[i].isPrimitive()) return false;
+        }
+        return true;
+    }
+
 }

@@ -15,9 +15,12 @@
  */
 package nl.talsmasoftware.reflection;
 
+import nl.talsmasoftware.reflection.errorhandling.MethodInvocationException;
 import nl.talsmasoftware.reflection.errorhandling.MissingMethodException;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
+
+import java.lang.reflect.Method;
 
 import static nl.talsmasoftware.test.TestUtil.assertExceptionMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -126,4 +129,30 @@ public class MethodsTest {
         assertThat(Methods.findMethod("toString"), is(nullValue()));
     }
 
+    @Test
+    public void testCall() throws NoSuchMethodException {
+        assertThat(Methods.call(Object.class.getMethod("toString"), "The quick brown fox jumps over the lazy dog"),
+                is((Object) "The quick brown fox jumps over the lazy dog"));
+        assertThat(Methods.call("java.lang.Object.equals", "my value",  "my value"), is((Object) true));
+    }
+
+    @Test
+    public void testCall_null() {
+        try {
+            Methods.call((Method) null, new Object());
+            fail("Exception expected.");
+        } catch (MethodInvocationException expected) {
+            assertExceptionMessage(expected);
+        }
+    }
+
+    @Test
+    public void testCall_subjectNullNonStaticMethod() throws NoSuchMethodException {
+        try {
+            Methods.call(Object.class.getMethod("toString"), null);
+            fail("Exception expected.");
+        } catch (MethodInvocationException expected) {
+            assertExceptionMessage(expected);
+        }
+    }
 }
