@@ -68,6 +68,21 @@ public class BeanReflectionTest {
     }
 
     @Test
+    public void testSetPropertyValue_publicField() {
+        NestedProperties bean = new NestedProperties();
+        assertThat("Set value", BeanReflection.setPropertyValue(bean, "value", "new-value"), is(true));
+        assertThat(bean.value, is("new-value"));
+    }
+
+    @Test
+    public void testSetPropertyValue_SetterBeatsField() {
+        BeanWithSetter beanWithSetter = new BeanWithSetter();
+        assertThat("Set value", BeanReflection.setPropertyValue(beanWithSetter, "value", "new-value"), is(true));
+        assertThat("Field", beanWithSetter.value, is(nullValue()));
+        assertThat("Shadowed via setter", beanWithSetter.shadowValue, is("new-value"));
+    }
+
+    @Test
     public void testGetPropertyValue_withGetter() {
         assertThat(BeanReflection.getPropertyValue(new BeanWithGetter("a"), "value"), is(equalTo((Object) "a")));
     }
@@ -283,6 +298,15 @@ public class BeanReflectionTest {
         @Readable
         public String getValue() {
             return value;
+        }
+    }
+
+    public static class BeanWithSetter {
+        public String value;
+        private String shadowValue;
+
+        public void setValue(String newValue) {
+            this.shadowValue = newValue;
         }
     }
 

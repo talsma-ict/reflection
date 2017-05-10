@@ -16,8 +16,10 @@
 package nl.talsmasoftware.reflection.strings;
 
 import nl.talsmasoftware.reflection.JavaBean;
+import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
 
+import static nl.talsmasoftware.test.TestUtil.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -140,6 +142,39 @@ public class ToStringBuilderTest {
         assertThat("lengte", lengte, is(equalTo(expected.length())));
         for (int i = 0; i < lengte; i++) {
             assertThat("karakter " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
+        }
+    }
+
+    @Test
+    public void testCharAt() {
+        ToStringBuilder subject = new ToStringBuilder("prefix").append("string", 1, 5);
+        assertThat(subject, hasToString("prefix{\"trin\"}")); // for reference
+        try { // negative index
+            subject.charAt(-1);
+            fail("Index exception expected.");
+        } catch (StringIndexOutOfBoundsException expected) {
+            assertThat(expected.getMessage(), containsString("-1"));
+        }
+        try { // too big index
+            subject.charAt(14);
+            fail("Index exception expected.");
+        } catch (StringIndexOutOfBoundsException expected) {
+            assertThat(expected.getMessage(), containsString("14"));
+        }
+        // test corner cases of separate parts.
+        assertThat(subject.charAt(0), is('p')); // prefix
+        assertThat(subject.charAt(5), is('x'));
+        assertThat(subject.charAt(6), is('{')); // leftbracket
+        assertThat(subject.charAt(7), is('\"')); // body
+        assertThat(subject.charAt(12), is('\"'));
+        assertThat(subject.charAt(13), is('}')); // rightbracket
+
+        // Test StringBuilder consisting of only a single random string of 25 characters.
+        final String randomString = TestUtil.randomString(25, 25);
+        subject = new ToStringBuilder(randomString);
+        assertThat(subject.length(), is(25));
+        for (int i = 0; i < 25; i++) {
+            assertThat("Character " + i, subject.charAt(i), is(randomString.charAt(i)));
         }
     }
 

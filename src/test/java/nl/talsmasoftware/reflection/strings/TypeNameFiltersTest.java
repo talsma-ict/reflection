@@ -16,16 +16,39 @@
 package nl.talsmasoftware.reflection.strings;
 
 import nl.talsmasoftware.test.TestUtil;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * @author Sjoerd Talsma
  */
 public class TypeNameFiltersTest {
+    public static class TestFilter implements TypeNameFilter {
+        public String apply(String typeName) {
+            return "TypeNameFiltersTest".equals(typeName) ? typeName + "-tested" : typeName;
+        }
+    }
+
+    @Before
+    @After
+    public void resetTypeNameFilters() {
+        TypeNameFilters.reset();
+        assertThat(TestUtil.getPrivateField(TypeNameFilters.class, "filter"), is(nullValue()));
+    }
 
     @Test
     public void testUnsupportedConstructor() {
         TestUtil.assertUnsupportedConstructor(TypeNameFilters.class);
+    }
+
+    @Test
+    public void testFiltered() {
+        assertThat("Filter applied", TypeNameFilters.filter(getClass().getSimpleName()), is("TypeNameFiltersTest-tested"));
     }
 
 }

@@ -389,23 +389,17 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      * @return The character that is on position <code>index</code> in the current state of this builder.
      */
     public char charAt(int index) {
-        if (index < prefix.length() || !hasContent()) {
-            return prefix.charAt(index);
-        } else {
-            index -= prefix.length();
+        if (index < prefix.length() || !hasContent()) return prefix.charAt(index);
+        else if (index >= prefix.length() + leftBracket.length() + fields.length() + rightBracket.length()) {
+            throw new StringIndexOutOfBoundsException(index);
         }
+        index -= prefix.length();
 
-        if (index < leftBracket.length()) {
-            return leftBracket.charAt(index);
-        } else {
-            index -= leftBracket.length();
-        }
+        if (index < leftBracket.length()) return leftBracket.charAt(index);
+        index -= leftBracket.length();
 
-        if (index < fields.length()) {
-            return fields.charAt(index);
-        } else {
-            index -= fields.length();
-        }
+        if (index < fields.length()) return fields.charAt(index);
+        index -= fields.length();
 
         return rightBracket.charAt(index);
     }
