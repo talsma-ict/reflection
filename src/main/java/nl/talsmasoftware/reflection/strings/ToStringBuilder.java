@@ -398,10 +398,7 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
         if (index < leftBracket.length()) return leftBracket.charAt(index);
         index -= leftBracket.length();
 
-        if (index < fields.length()) return fields.charAt(index);
-        index -= fields.length();
-
-        return rightBracket.charAt(index);
+        return index < fields.length() ? fields.charAt(index) : rightBracket.charAt(index - fields.length());
     }
 
     /**
