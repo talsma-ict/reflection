@@ -179,6 +179,21 @@ public class ToStringBuilderTest {
     }
 
     @Test
+    public void testSubSequence() {
+        ToStringBuilder subject = new ToStringBuilder("");
+        assertThat(subject.length(), is(0));
+        assertThat(subject, hasToString(""));
+        assertThat(subject.subSequence(0, 0), hasToString(""));
+        subject.append(' ');
+        assertThat(subject.length(), is(3));
+        assertThat(subject.subSequence(0, 0), hasToString(""));
+        assertThat(subject.subSequence(0, 1), hasToString("{"));
+        assertThat(subject.subSequence(1, 2), hasToString(" "));
+        assertThat(subject.subSequence(0, 3), hasToString("{ }"));
+        assertThat(subject.subSequence(3, 3), hasToString(""));
+    }
+
+    @Test
     public void testReflect_null() {
         assertThat(ToStringBuilder.reflect(null), is(notNullValue()));
         assertThat(ToStringBuilder.reflect(null), hasToString(""));

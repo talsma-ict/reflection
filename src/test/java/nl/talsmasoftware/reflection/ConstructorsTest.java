@@ -15,8 +15,11 @@
  */
 package nl.talsmasoftware.reflection;
 
+import nl.talsmasoftware.reflection.errorhandling.MissingConstructorException;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author Sjoerd Talsma
@@ -26,6 +29,16 @@ public class ConstructorsTest {
     @Test
     public void testUnsupportedConstructor() {
         TestUtil.assertUnsupportedConstructor(Constructors.class);
+    }
+
+    @Test
+    public void testGetConstructor_nullType() {
+        try {
+            Constructors.getConstructor((Class) null);
+            fail("Exception expected");
+        } catch (MissingConstructorException expected) {
+            TestUtil.assertExceptionMessage(expected);
+        }
     }
 
 }

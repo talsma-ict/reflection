@@ -47,7 +47,7 @@ public final class Constructors {
      * @throws MethodInvocationException If no suitable constructor could be found corresponding to the parameter types.
      */
     public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
-        if (type == null) throw new MethodInvocationException("Cannot obtain constructor for class <null>.");
+        if (type == null) throw new MissingConstructorException("Cannot obtain constructor for class <null>.", null);
         try {
 
             // TODO: findConstructor based on the actual arguments object-array.
