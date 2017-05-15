@@ -63,15 +63,15 @@ public final class Constructors {
     }
 
     public static Constructor<?> getConstructor(String className, Class<?>... parameterTypes) {
-        return getConstructor(Classes.getClass(className), parameterTypes);
+        return getConstructor(className == null ? null : Classes.getClass(className), parameterTypes);
     }
 
     public static Constructor<?> getConstructor(String className, String... parameterTypeNames) {
-        return getConstructor(Classes.getClass(className), Classes.getClasses(parameterTypeNames));
+        return getConstructor(className, Classes.getClasses(parameterTypeNames));
     }
 
     public static Constructor<?> getConstructor(String className) {
-        return getConstructor(Classes.getClass(className), NO_TYPES);
+        return getConstructor(className, NO_TYPES);
     }
 
     public static <T> Constructor<T> findConstructor(Class<T> type, Class<?>... parameterTypes) {
@@ -84,15 +84,15 @@ public final class Constructors {
     }
 
     public static Constructor<?> findConstructor(String className, Class<?>... parameterTypes) {
-        return findConstructor(Classes.findClass(className), parameterTypes);
+        return findConstructor(className == null ? null : Classes.findClass(className), parameterTypes);
     }
 
     public static Constructor<?> findConstructor(String className, String... parameterTypeNames) {
-        return findConstructor(Classes.findClass(className), Classes.findClasses(parameterTypeNames));
+        return findConstructor(className, Classes.findClasses(parameterTypeNames));
     }
 
     public static Constructor<?> findConstructor(String className) {
-        return findConstructor(Classes.findClass(className), NO_TYPES);
+        return findConstructor(className, NO_TYPES);
     }
 
 }

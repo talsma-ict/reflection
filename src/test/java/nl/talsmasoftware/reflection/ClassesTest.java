@@ -39,6 +39,11 @@ public class ClassesTest {
     }
 
     @Test(expected = MissingClassException.class)
+    public void testGetClass_NameNull() {
+        Classes.getClass(null);
+    }
+
+    @Test(expected = MissingClassException.class)
     public void testGetClass_NotFound() {
         Classes.getClass(NONEXISTENT_TYPE);
     }
@@ -60,6 +65,11 @@ public class ClassesTest {
     @Test
     public void testFindClass() {
         assertThat(Classes.findClass(Boolean.class.getName()), is(equalTo((Class) Boolean.class)));
+    }
+
+    @Test
+    public void testFindClass_NameNull() {
+        assertThat(Classes.findClass(null), is(nullValue()));
     }
 
     @Test

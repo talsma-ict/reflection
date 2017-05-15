@@ -19,6 +19,9 @@ import nl.talsmasoftware.reflection.errorhandling.MissingConstructorException;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
 /**
@@ -32,13 +35,25 @@ public class ConstructorsTest {
     }
 
     @Test
-    public void testGetConstructor_nullType() {
+    public void testGetConstructor_nullTest() {
         try {
             Constructors.getConstructor((Class) null);
             fail("Exception expected");
         } catch (MissingConstructorException expected) {
             TestUtil.assertExceptionMessage(expected);
         }
+        try {
+            Constructors.getConstructor((String) null);
+            fail("Exception expected");
+        } catch (MissingConstructorException expected) {
+            TestUtil.assertExceptionMessage(expected);
+        }
+    }
+
+    @Test
+    public void testFindConstructor_nullTest() {
+        assertThat(Constructors.findConstructor((Class) null), is(nullValue()));
+        assertThat(Constructors.findConstructor((String) null), is(nullValue()));
     }
 
 }
