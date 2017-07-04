@@ -51,4 +51,9 @@ public class TypeNameFiltersTest {
         assertThat("Filter applied", TypeNameFilters.filter(getClass().getSimpleName()), is("TypeNameFiltersTest-tested"));
     }
 
+    @Test
+    public void testSimulateNoFiltersFound () {
+        TestUtil.setPrivateField(TypeNameFilters.class, "filter", TypeNameFilter.IDENTITY);
+        assertThat("Identity test", TypeNameFilters.filter(getClass().getSimpleName()), is("TypeNameFiltersTest"));
+    }
 }

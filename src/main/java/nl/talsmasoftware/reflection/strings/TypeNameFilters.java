@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 
 /**
  * Utility class to provide pluggable ability to filter the name of a type.
+ * <p>
+ * This functionality is used in the {@code ToStringBuilder prefix} initialization.
  *
  * @author Sjoerd Talsma
  */

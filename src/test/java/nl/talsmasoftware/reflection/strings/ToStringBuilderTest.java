@@ -37,15 +37,16 @@ public class ToStringBuilderTest {
 
     @Test
     public void testConstructor_plainString() {
-        assertThat(new ToStringBuilder("Aap noot mies"), is(notNullValue()));
-        assertThat(new ToStringBuilder("Aap noot mies"), hasToString(equalTo("Aap noot mies")));
+        assertThat(new ToStringBuilder("Plain string value"), is(notNullValue()));
+        assertThat(new ToStringBuilder("Plain string value"), hasToString(equalTo("Plain string value")));
         assertThat(new ToStringBuilder(""), hasToString(equalTo(""))); // Lege prefix
-        assertThat(new ToStringBuilder("Naampje").append("key", "value"), hasToString(equalTo("Naampje{key=\"value\"}")));
+        assertThat(new ToStringBuilder("Prefix").append("key", "value"), hasToString(equalTo("Prefix{key=\"value\"}")));
     }
 
     @Test
     public void testEmptyObject() {
-        assertThat(new ToStringBuilder(getClass()),
+        assertThat(new ToStringBuilder(getClass()), hasToString(equalTo("ToStringBuilderTest")));
+        assertThat(new ToStringBuilder(getClass()).brackets("(", ")"),
                 hasToString(equalTo("ToStringBuilderTest")));
         assertThat(new ToStringBuilder(this).forceBrackets("(", ")"),
                 hasToString(equalTo("ToStringBuilderTest()")));
@@ -85,63 +86,63 @@ public class ToStringBuilderTest {
 
     @Test
     public void testAppendSuper() {
-        assertThat(new ToStringBuilder(getClass()).appendSuper("EenObject{veldA=\"een waarde\", veldB=10}").append(13),
-                hasToString(equalTo("ToStringBuilderTest{veldA=\"een waarde\", veldB=10, 13}")));
-        assertThat(new ToStringBuilder(this).brackets("{", "]").appendSuper("EenObject{veldA=\"een waarde\"}"),
-                hasToString(equalTo("ToStringBuilderTest{veldA=\"een waarde\"}]")));
-        assertThat(new ToStringBuilder(getClass()).brackets("[", "}").appendSuper("EenObject{veldA=\"een waarde\"}"),
-                hasToString(equalTo("ToStringBuilderTest[EenObject{veldA=\"een waarde\"}}")));
-        assertThat(new ToStringBuilder(this).brackets("[", "]").appendSuper("EenObject{veldA=\"een waarde\"}"),
-                hasToString(equalTo("ToStringBuilderTest[EenObject{veldA=\"een waarde\"}]")));
-        assertThat(new ToStringBuilder(getClass()).brackets("[", "]").appendSuper("EenObject[veldA=\"een waarde\"]"),
-                hasToString(equalTo("ToStringBuilderTest[veldA=\"een waarde\"]")));
-        // Andere brackets, maar wel een ToStringBuilder.
+        assertThat(new ToStringBuilder(getClass()).appendSuper("AnObject{fieldA=\"a value\", fieldB=10}").append(13),
+                hasToString(equalTo("ToStringBuilderTest{fieldA=\"a value\", fieldB=10, 13}")));
+        assertThat(new ToStringBuilder(this).brackets("{", "]").appendSuper("AnObject{fieldA=\"a value\"}"),
+                hasToString(equalTo("ToStringBuilderTest{fieldA=\"a value\"}]")));
+        assertThat(new ToStringBuilder(getClass()).brackets("[", "}").appendSuper("AnObject{fieldA=\"a value\"}"),
+                hasToString(equalTo("ToStringBuilderTest[AnObject{fieldA=\"a value\"}}")));
+        assertThat(new ToStringBuilder(this).brackets("[", "]").appendSuper("AnObject{fieldA=\"a value\"}"),
+                hasToString(equalTo("ToStringBuilderTest[AnObject{fieldA=\"a value\"}]")));
+        assertThat(new ToStringBuilder(getClass()).brackets("[", "]").appendSuper("AnObject[fieldA=\"a value\"]"),
+                hasToString(equalTo("ToStringBuilderTest[fieldA=\"a value\"]")));
+        // Different brackets, but a een ToStringBuilder.
         assertThat(new ToStringBuilder(this).brackets("[", "]").appendSuper(
-                new ToStringBuilder("EenObject").brackets("{", "}").append("veldA", "een waarde")),
-                hasToString(equalTo("ToStringBuilderTest[veldA=\"een waarde\"]")));
+                new ToStringBuilder("AnObject").brackets("{", "}").append("fieldA", "a value")),
+                hasToString(equalTo("ToStringBuilderTest[fieldA=\"a value\"]")));
     }
 
     @Test
-    public void testAndereSeparator() {
-        final String expected = "ToStringBuilderTest{veldA=\"een waarde\", veldB=13 & veldC=false}";
+    public void testDifferentSeparator() {
+        final String expected = "ToStringBuilderTest{fieldA=\"a value\", fieldB=13 & fieldC=false}";
         assertThat(new ToStringBuilder(getClass())
-                        .append("veldA", "een waarde")
-                        .append("veldB", 13)
+                        .append("fieldA", "a value")
+                        .append("fieldB", 13)
                         .separator(" & ")
-                        .append("veldC", false),
+                        .append("fieldC", false),
                 hasToString(equalTo(expected)));
     }
 
     @Test
     public void testCharSequenceMethods() {
-        String expected = "ToStringBuilderTest{veldA=\"een waarde\", veldB=13 & veldC=false}";
+        String expected = "ToStringBuilderTest{fieldA=\"a value\", fieldB=13 & fieldC=false}";
         ToStringBuilder builder = new ToStringBuilder(getClass())
-                .append("veldA", "een waarde")
-                .append("veldB", 13)
+                .append("fieldA", "a value")
+                .append("fieldB", 13)
                 .separator(" & ")
-                .append("veldC", false);
-        int lengte = builder.length();
-        assertThat("lengte", lengte, is(equalTo(expected.length())));
-        for (int i = 0; i < lengte; i++) {
-            assertThat("karakter " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
+                .append("fieldC", false);
+        int length = builder.length();
+        assertThat("length", length, is(equalTo(expected.length())));
+        for (int i = 0; i < length; i++) {
+            assertThat("character " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
         }
 
-        // Lege builder.
+        // Empty builder.
         expected = "ToStringBuilderTest";
         builder = new ToStringBuilder(getClass()).brackets("(", ")").includeNulls();
-        lengte = builder.length();
-        assertThat("lengte", lengte, is(equalTo(expected.length())));
-        for (int i = 0; i < lengte; i++) {
-            assertThat("karakter " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
+        length = builder.length();
+        assertThat("length", length, is(equalTo(expected.length())));
+        for (int i = 0; i < length; i++) {
+            assertThat("character " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
         }
 
-        // Lege builder met brackets.
+        // Empty builder with brackets.
         expected = "ToStringBuilderTest()";
         builder = new ToStringBuilder(getClass()).forceBrackets("(", ")").includeNulls();
-        lengte = builder.length();
-        assertThat("lengte", lengte, is(equalTo(expected.length())));
-        for (int i = 0; i < lengte; i++) {
-            assertThat("karakter " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
+        length = builder.length();
+        assertThat("length", length, is(equalTo(expected.length())));
+        for (int i = 0; i < length; i++) {
+            assertThat("character " + i, builder.charAt(i), is(equalTo(expected.charAt(i))));
         }
     }
 
@@ -161,7 +162,7 @@ public class ToStringBuilderTest {
         } catch (StringIndexOutOfBoundsException expected) {
             assertThat(expected.getMessage(), containsString("14"));
         }
-        // test corner cases of separate parts.
+        // test corner-cases of separate parts.
         assertThat(subject.charAt(0), is('p')); // prefix
         assertThat(subject.charAt(5), is('x'));
         assertThat(subject.charAt(6), is('{')); // leftbracket
@@ -212,28 +213,28 @@ public class ToStringBuilderTest {
 
     @Test
     public void testReflect_JavaBean() {
-        assertThat(ToStringBuilder.reflect(new JavaBean("een waarde", null, null, null)),
-                hasToString(equalTo("JavaBean{value1=\"een waarde\"}")));
+        assertThat(ToStringBuilder.reflect(new JavaBean("a value", null, null, null)),
+                hasToString(equalTo("JavaBean{value1=\"a value\"}")));
         assertThat(ToStringBuilder.reflect(new JavaBean(null, 42, null, null)),
                 hasToString(equalTo("JavaBean{value2=42}")));
         assertThat(ToStringBuilder.reflect(new JavaBean(null, null, false, null)),
                 hasToString(equalTo("JavaBean{value3=false}")));
         assertThat(ToStringBuilder.reflect(new JavaBean(null, null, null, new Object())),
                 hasToString(equalTo("JavaBean{value4=Object}")));
-        assertThat(ToStringBuilder.reflect(new JavaBean("een waarde", 42, true, new JavaBean(null, 19, null, null))),
-                hasToString(equalTo("JavaBean{value1=\"een waarde\", value2=42, value3=true, value4=JavaBean{value2=19}}")));
+        assertThat(ToStringBuilder.reflect(new JavaBean("a value", 42, true, new JavaBean(null, 19, null, null))),
+                hasToString(equalTo("JavaBean{value1=\"a value\", value2=42, value3=true, value4=JavaBean{value2=19}}")));
     }
 
     @Test
     public void testReflect_CircularReference() {
-        JavaBean bean1 = new JavaBean("een waarde", null, null, null);
-        JavaBean bean2 = new JavaBean(null, 42, null, bean1);
+        final JavaBean bean1 = new JavaBean("a value", null, null, null);
+        final JavaBean bean2 = new JavaBean(null, 42, null, bean1);
         String bean2ref = JavaBean.class.getName() + "@" + Integer.toHexString(bean2.hashCode()); // default toString
-        bean1.setValue4(bean2);
+        bean1.setValue4(bean2); // create circle: bean1 -> bean2 -> bean1
 
         assertThat(ToStringBuilder.reflect(bean1),
-                hasToString(equalTo("JavaBean{value1=\"een waarde\", value4=JavaBean{value2=42, " +
-                        "value4=JavaBean{value1=\"een waarde\", value4=" + bean2ref + "}}}")));
+                hasToString(equalTo("JavaBean{value1=\"a value\", value4=JavaBean{value2=42, " +
+                        "value4=JavaBean{value1=\"a value\", value4=" + bean2ref + "}}}")));
     }
 
 }

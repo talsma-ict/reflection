@@ -32,14 +32,10 @@ import static org.hamcrest.Matchers.*;
 public class AbstractDtoTest {
 
     // TODO separate into own java mapping tests.
-//    ModelMapper domeinMapper;
     DtoRepresentationV1 valueObject;
 
     @Before
     public void setUp() {
-//        domeinMapper = new ModelMapper();
-//        domeinMapper.getConfiguration().setFieldMatchingEnabled(true);
-
         valueObject = new DtoRepresentationV1();
         valueObject.number = 42L;
         valueObject.name = "Representation name";
@@ -90,7 +86,7 @@ public class AbstractDtoTest {
         // Test for name
         copy.number = 42L;
         assertThat(copy, is(equalTo(valueObject)));
-        copy.name = "Kopie name";
+        copy.name = "Copy name";
         assertThat(copy, is(not(equalTo(valueObject))));
 
         // Test for subObject
@@ -124,7 +120,7 @@ public class AbstractDtoTest {
         // Test op name
         valueObject.number = 42L;
         assertThat(valueObject.hashCode(), is(equalTo(hashcode)));
-        valueObject.name = "Andere name";
+        valueObject.name = "Other name";
         assertThat(valueObject.hashCode(), is(not(equalTo(hashcode))));
 
         // Test op subObject
@@ -213,59 +209,4 @@ public class AbstractDtoTest {
         }
     }
 
-//    public static class DomeinObject {
-//        private final long _private_nummer;
-//        private final String _private_naam;
-//        private final DomeinObject _private_subObject;
-//
-//        private DomeinObject(long number, String name, DomeinObject subObject) {
-//            this._private_nummer = number;
-//            this._private_naam = name;
-//            this._private_subObject = subObject;
-//        }
-//
-//        public long getNummer() {
-//            return _private_nummer;
-//        }
-//
-//        public String getNaam() {
-//            return _private_naam;
-//        }
-//
-//        public DomeinObject getSubObject() {
-//            return _private_subObject;
-//        }
-//
-//        public static class Builder {
-//            private long number;
-//            private String name;
-//            private Builder parent, child;
-//
-//            public Builder number(long number) {
-//                this.number = number;
-//                return this;
-//            }
-//
-//            public Builder name(String name) {
-//                this.name = name;
-//                return this;
-//            }
-//
-//            public Builder child() {
-//                if (child == null) {
-//                    child = new Builder();
-//                    child.parent = this;
-//                }
-//                return child;
-//            }
-//
-//            public Builder parent() {
-//                return parent;
-//            }
-//
-//            public DomeinObject build() {
-//                return new DomeinObject(number, name, child == null ? null : child.build());
-//            }
-//        }
-//    }
 }
