@@ -425,7 +425,7 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      * @return The converted String value.
      */
     private static String nullToEmpty(Object value) {
-        return value != null ? value.toString() : "";
+        return value == null ? "" : value.toString();
     }
 
     /**
@@ -447,10 +447,10 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
         private final CharSequence source;
         private final String left, right;
 
-        private ToStringBetween(CharSequence source, CharSequence left, CharSequence right) {
-            this.source = source != null ? source : "";
-            this.left = nullToEmpty(left);
-            this.right = nullToEmpty(right);
+        private ToStringBetween(CharSequence source, String left, String right) {
+            this.source = source == null ? "" : source;
+            this.left = left;
+            this.right = right;
         }
 
         /**
