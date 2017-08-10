@@ -15,10 +15,12 @@
  */
 package nl.talsmasoftware.reflection;
 
+import nl.talsmasoftware.reflection.errorhandling.InstantiatingException;
 import nl.talsmasoftware.reflection.errorhandling.MissingClassException;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
 
+import static nl.talsmasoftware.test.TestUtil.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -83,5 +85,34 @@ public class ClassesTest {
         assertThat(Classes.findClasses(), is(equalTo(new Class[0])));
         assertThat(Classes.findClasses(String.class.getName(), NONEXISTENT_TYPE, Integer.class.getName()),
                 is(equalTo(new Class[]{String.class, null, Integer.class})));
+    }
+
+    @Test
+    public void testCreateNew() {
+        assertThat(Classes.createNew("java.lang.Object"), is(notNullValue()));
+        assertThat(Classes.createNew(Object.class), is(notNullValue()));
+    }
+
+    @Test
+    public void testTryCreateNew() {
+        assertThat(Classes.tryCreateNew("java.lang.Object"), is(notNullValue()));
+        assertThat(Classes.tryCreateNew(Object.class), is(notNullValue()));
+    }
+
+    @Test(expected = InstantiatingException.class)
+    public void testCreateNew_exceptionInConstructor() {
+        Classes.createNew(Thrower.class);
+        fail("InstantiatingException expected.");
+    }
+
+    @Test
+    public void testTryCreateNew_exceptionInConstructor() {
+        assertThat(Classes.tryCreateNew(Thrower.class), is(nullValue()));
+    }
+
+    public static class Thrower {
+        public Thrower() {
+            throw new IllegalStateException("Exception in constructor.");
+        }
     }
 }
