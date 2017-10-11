@@ -65,7 +65,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <build.java.version>1.5</build.java.version>
+        <maven.compiler.source>1.5</maven.compiler.source>
+        <maven.compiler.target>1.5</maven.compiler.target>
 
         <!-- runtime -->
 
@@ -83,8 +84,8 @@
         <jackson2.version>2.7.5</jackson2.version>
 
         <!-- build -->
-        <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
-        <maven-failsafe-plugin.version>2.20</maven-failsafe-plugin.version>
+        <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <maven-failsafe-plugin.version>2.20.1</maven-failsafe-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
         <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
@@ -96,7 +97,7 @@
         <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
-        <umldoclet.version>1.0.12</umldoclet.version>
+        <umldoclet.version>1.0.13</umldoclet.version>
     </properties>
 
     <build>
@@ -178,8 +179,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${build.java.version}</source>
-                    <target>${build.java.version}</target>
                     <showDeprecation>true</showDeprecation>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
@@ -248,18 +247,11 @@
                             <docencoding>UTF-8</docencoding>
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <additionalparam>
-                                -umlSkipStandardDoclet true
                                 -umlImageFormat SVG
                                 -umlCommand "hide empty fields"
                                 -umlCommand "hide empty methods"
                             </additionalparam>
                         </configuration>
-                    </execution>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
