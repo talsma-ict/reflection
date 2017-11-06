@@ -65,8 +65,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.5</maven.compiler.source>
-        <maven.compiler.target>1.5</maven.compiler.target>
+        <maven.compiler.source>9</maven.compiler.source>
+        <maven.compiler.target>9</maven.compiler.target>
 
         <!-- runtime -->
 
@@ -86,7 +86,7 @@
         <!-- build -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
         <maven-failsafe-plugin.version>2.20.1</maven-failsafe-plugin.version>
         <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
@@ -239,6 +239,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
+                            <javadocVersion>1.8</javadocVersion>
                             <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet>
                             <docletArtifact>
                                 <groupId>nl.talsmasoftware</groupId>
@@ -253,6 +254,9 @@
                                 -umlCommand "hide empty fields"
                                 -umlCommand "hide empty methods"
                             </additionalparam>
+                            <sourceFileExcludes>
+                                <sourceFileExclude>module-info.java</sourceFileExclude>
+                            </sourceFileExcludes>
                         </configuration>
                     </execution>
                 </executions>
