@@ -8,7 +8,6 @@ jdk:
 addons:
   apt:
     packages:
-      - oraclejdk8 // to recompile for java 5
       - graphviz
 cache:
   directories:
