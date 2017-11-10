@@ -21,7 +21,7 @@ module talsmasoftware.reflection {
     exports nl.talsmasoftware.reflection.errorhandling;
     exports nl.talsmasoftware.reflection.strings;
 
-    requires java.desktop;
+    requires java.desktop; // TODO implement ourselves.
     requires java.logging;
 
 }
