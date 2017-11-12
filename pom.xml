@@ -205,7 +205,7 @@
                 </executions>
                 <configuration> <!-- defaults for compile and testCompile -->
                     <jdkToolchain>
-                        <version>[1.5,9)</version>
+                        <version>[1.5,1.8]</version>
                     </jdkToolchain>
                     <source>1.5</source>
                     <target>1.5</target>
