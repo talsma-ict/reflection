@@ -177,11 +177,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <!--
-                Taken from example on
-                https://maven.apache.org/plugins/maven-compiler-plugin/examples/module-info.html
-             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -190,8 +185,6 @@
                     <execution>
                         <id>default-compile</id>
                         <configuration>
-                            <!-- compile everything to ensure module-info contains right entries -->
-                            <!-- required when JAVA_HOME is JDK 8 or below -->
                             <jdkToolchain>
                                 <version>9</version>
                             </jdkToolchain>
@@ -203,7 +196,6 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
-                        <!-- recompile everything for target VM except the module-info.java -->
                         <configuration>
                             <excludes>
                                 <exclude>module-info.java</exclude>
@@ -211,9 +203,7 @@
                         </configuration>
                     </execution>
                 </executions>
-                <!-- defaults for compile and testCompile -->
-                <configuration>
-                    <!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
+                <configuration> <!-- defaults for compile and testCompile -->
                     <jdkToolchain>
                         <version>[1.5,9)</version>
                     </jdkToolchain>
