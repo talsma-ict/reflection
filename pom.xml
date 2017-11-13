@@ -76,10 +76,10 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <xmlunit.version>2.5.0</xmlunit.version>
+        <xmlunit.version>2.5.1</xmlunit.version>
         <hibernate-validator.version>6.0.4.Final</hibernate-validator.version>
         <javax-el.version>2.2.6</javax-el.version>
-        <jackson2.version>2.8.10</jackson2.version>
+        <jackson2.version>2.9.2</jackson2.version>
 
         <!-- build -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
