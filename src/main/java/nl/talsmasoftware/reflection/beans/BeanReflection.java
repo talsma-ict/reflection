@@ -16,30 +16,26 @@
 package nl.talsmasoftware.reflection.beans;
 
 import nl.talsmasoftware.reflection.Classes;
+import nl.talsmasoftware.reflection.Methods;
 
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.util.Collections.*;
+import static nl.talsmasoftware.reflection.beans.ReflectedBeanProperty.propertyNameOf;
 
 /**
  * Support-class for bean reflection based on getter / setter methods and / or public field access for Java objects.
- * Unfortunately this is necessary because the standard {@link Introspector bean introspector} does not return any
- * public fields.
+ * Unfortunately this is necessary because the standard Java bean introspector}does not return any  public fields.
  * <p>
- * Class diagram:<br><center><img src="BeanReflectionSupport.svg" alt="class diagram"></center>
+ * Class diagram:<br><center><img src="BeanReflection.svg" alt="class diagram"></center>
  *
  * @author Sjoerd Talsma
  */
@@ -95,59 +91,42 @@ public final class BeanReflection {
     private static Map<String, ReflectedBeanProperty> reflectProperties(Class<?> sourceType) {
         Map<String, ReflectedBeanProperty> properties = new LinkedHashMap<String, ReflectedBeanProperty>();
         if (sourceType != null) {
-            addPublicFields(sourceType, properties);
-            addPropertyDescriptors(sourceType, properties);
+            for (Field field : sourceType.getFields()) {
+                if (isPublic(field.getModifiers()) && !isStatic(field.getModifiers())) {
+                    properties.put(field.getName(), new ReflectedBeanProperty(null, null, field));
+                }
+            }
+            for (Method method : methodsOf(sourceType, new LinkedHashSet<Method>())) {
+                String propertyName = propertyNameOf(method);
+                if (propertyName != null) {
+                    Method getter = null, setter = null;
+                    if (method.getParameterTypes().length == 0) getter = method;
+                    else setter = method;
+                    ReflectedBeanProperty current = properties.get(propertyName);
+                    properties.put(propertyName, ReflectedBeanProperty.merge(current, getter, setter, null));
+                }
+            }
         }
         return unmodifiable(properties);
     }
 
-    /**
-     * Add all public fields for the <code>sourceType</code> to the map of reflected properties.
-     *
-     * @param sourceType The source type to be reflected.
-     * @param properties The map of reflected properties to add public fields to.
-     */
-    private static void addPublicFields(Class<?> sourceType, Map<String, ReflectedBeanProperty> properties) {
-        for (Field field : sourceType.getFields()) {
-            if (isPublic(field.getModifiers()) && !isStatic(field.getModifiers())) {
-                properties.put(field.getName(), new ReflectedBeanProperty(null, field));
+    private static Collection<Method> methodsOf(Class<?> type, Collection<Method> acc) {
+        if (type != null) {
+            for (Method m : Methods.getDeclaredMethods(type)) {
+                if (isPublic(m.getModifiers()) && !isStatic(m.getModifiers())) acc.add(m);
             }
+            return methodsOf(type.getSuperclass(), acc);
         }
+        return acc;
     }
 
     /**
-     * Add all {@link PropertyDescriptor property descriptors} from the {@link Introspector} to the map of reflected
-     * properties.
-     *
-     * @param sourceType The source type to be reflected.
-     * @param properties The map of reflected properties to add public fields to.
-     */
-    private static void addPropertyDescriptors(Class<?> sourceType, Map<String, ReflectedBeanProperty> properties) {
-        try { // java.beans.Introspector properties:
-            for (PropertyDescriptor descriptor : Introspector.getBeanInfo(sourceType).getPropertyDescriptors()) {
-                String name = descriptor.getName();
-                ReflectedBeanProperty property = properties.get(name);
-                properties.put(name, property == null ? new ReflectedBeanProperty(descriptor, null)
-                        : property.withDescriptor(descriptor));
-            }
-        } catch (IntrospectionException is) {
-            LOGGER.log(Level.FINEST, "Could not reflect bean information of {0} because: {1}",
-                    new Object[]{sourceType.getName(), is});
-        } catch (RuntimeException beanException) {
-            LOGGER.log(Level.FINEST, "Exception reflecting bean information of {0}: {1}",
-                    new Object[]{sourceType.getName(), beanException});
-        }
-    }
-
-    /**
-     * This method flushes the caches of internally reflected information and asks the Bean {@link Introspector} to do
-     * the same.
+     * This method flushes the caches of internally reflected information.
      */
     public static void flushCaches() {
         synchronized (reflectedPropertiesCache) {
             reflectedPropertiesCache.clear();
         }
-        Introspector.flushCaches();
     }
 
     /**
@@ -163,7 +142,7 @@ public final class BeanReflection {
         ResolvedAccessor accessor = null;
         if (bean != null && propertyName != null) {
             Object src = bean;
-            String propName = propertyName.replaceAll("\\[([^\\]]*)\\]", ".$1"); // Replace array notation with dot.
+            String propName = propertyName.replaceAll("\\[([^]]*)]", ".$1"); // Replace array notation with dot.
             final int dotIdx = propName.lastIndexOf('.');
             if (dotIdx >= 0) {
                 src = getPropertyValue(bean, propName.substring(0, dotIdx));
@@ -171,8 +150,8 @@ public final class BeanReflection {
             }
             accessor = ResolvedAccessor.of(src, propName, reflectedPropertiesOf(src).get(propName));
         }
-        if (accessor == null) LOGGER.log(Level.FINEST,
-                "Property \"{0}\" not found in object: {1}", new Object[]{propertyName, bean});
+        if (accessor == null) LOGGER.log(Level.FINEST, "Property \"{0}\" not found in object: {1}",
+                new Object[]{propertyName, bean});
         return accessor;
     }
 

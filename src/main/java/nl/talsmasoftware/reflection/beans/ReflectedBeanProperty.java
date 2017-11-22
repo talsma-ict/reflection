@@ -15,7 +15,6 @@
  */
 package nl.talsmasoftware.reflection.beans;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -40,46 +39,69 @@ import static java.util.Collections.*;
 final class ReflectedBeanProperty implements BeanProperty {
     private static final Logger LOGGER = Logger.getLogger(ReflectedBeanProperty.class.getName());
 
-    private final PropertyDescriptor descriptor;
+    private final String name;
+    private final Method getter, setter;
     private final Field field;
+    private final Class<?> type;
     private volatile Collection annotations;
 
-    ReflectedBeanProperty(PropertyDescriptor descriptor, Field field) {
-        if (descriptor == null && field == null) {
-            throw new IllegalStateException("Either property descriptor or field must be provided!");
-        }
-        this.descriptor = descriptor;
+    ReflectedBeanProperty(Method getter, Method setter, Field field) {
+        this.getter = getter;
+        this.setter = setter;
         this.field = field;
+
+        // Validation whether getter/setter/field correspond to the same logical property with a unique name and type.
+        String nm = field == null ? null : field.getName();
+        Class<?> tp = field == null ? null : field.getType();
+        if (getter != null) {
+            nm = validateSameName(nm, propertyNameOf(getter));
+            Class<?> getterTp = getter.getReturnType();
+            if (tp == null) tp = getterTp;
+            else if (!getterTp.isAssignableFrom(tp)) throw new IllegalArgumentException("Incompatible getter type.");
+        }
+        if (setter != null) {
+            nm = validateSameName(nm, propertyNameOf(setter));
+            Class<?> setterTp = setter.getParameterTypes()[0];
+            if (tp == null) tp = setterTp;
+            else if (!tp.isAssignableFrom(setterTp)) throw new IllegalArgumentException("Incompatible setter type.");
+        }
+        if (nm == null || tp == null) {
+            throw new IllegalStateException("Either a field or getter/setter method must be provided!");
+        }
+        this.name = nm;
+        this.type = tp;
     }
 
-    ReflectedBeanProperty withDescriptor(PropertyDescriptor descriptor) {
-        return new ReflectedBeanProperty(descriptor, field);
+    static ReflectedBeanProperty merge(ReflectedBeanProperty other, Method getter, Method setter, Field field) {
+        return new ReflectedBeanProperty(
+                getter == null ? (other == null ? null : other.getter) : getter,
+                setter == null ? (other == null ? null : other.setter) : setter,
+                field == null ? (other == null ? null : other.field) : field);
     }
 
     public String getName() {
-        return descriptor != null ? descriptor.getName() : field.getName();
+        return name;
     }
 
     public Class<?> getType() {
-        return descriptor != null ? descriptor.getPropertyType() : field.getType();
+        return type;
     }
 
     public boolean isReadable() {
-        return (descriptor != null && descriptor.getReadMethod() != null)
-                || field != null;
+        return getter != null || field != null;
     }
 
     public boolean isWriteable() {
-        return (descriptor != null && descriptor.getWriteMethod() != null)
-                || (field != null && !isFinal(field.getModifiers()));
+        return setter != null || (field != null && !isFinal(field.getModifiers()));
     }
 
     public Object read(Object bean) {
         Object value = null;
         if (isReadable()) {
             try {
-                final Method readMethod = descriptor != null ? descriptor.getReadMethod() : null;
-                value = readMethod != null ? readMethod.invoke(bean) : field.get(bean);
+
+                value = getter != null ? getter.invoke(bean) : field.get(bean);
+
             } catch (InvocationTargetException ite) {
                 throw ite.getCause() instanceof RuntimeException ? (RuntimeException) ite.getCause()
                         : new IllegalStateException(String.format(
@@ -99,14 +121,11 @@ final class ReflectedBeanProperty implements BeanProperty {
         boolean written = false;
         if (isWriteable()) {
             try {
-                final Method writeMethod = descriptor != null ? descriptor.getWriteMethod() : null;
-                if (writeMethod != null) {
-                    writeMethod.invoke(bean, propertyValue);
-                    written = true;
-                } else {
-                    field.set(bean, propertyValue);
-                    written = true;
-                }
+
+                if (setter != null) setter.invoke(bean, propertyValue);
+                else field.set(bean, propertyValue);
+                written = true;
+
             } catch (InvocationTargetException ite) {
                 throw ite.getCause() instanceof RuntimeException ? (RuntimeException) ite.getCause()
                         : new IllegalStateException(String.format(
@@ -132,12 +151,8 @@ final class ReflectedBeanProperty implements BeanProperty {
     public Collection<Annotation> annotations() {
         if (annotations == null) {
             Collection<Annotation> foundAnnotations = new LinkedHashSet<Annotation>();
-            if (descriptor != null) {
-                if (descriptor.getReadMethod() != null)
-                    foundAnnotations.addAll(asList(descriptor.getReadMethod().getDeclaredAnnotations()));
-                if (descriptor.getWriteMethod() != null)
-                    foundAnnotations.addAll(asList(descriptor.getWriteMethod().getDeclaredAnnotations()));
-            }
+            if (getter != null) foundAnnotations.addAll(asList(getter.getDeclaredAnnotations()));
+            if (setter != null) foundAnnotations.addAll(asList(setter.getDeclaredAnnotations()));
             if (field != null) foundAnnotations.addAll(asList(field.getDeclaredAnnotations()));
             annotations = unmodifiableCopy(foundAnnotations);
         }
@@ -157,4 +172,53 @@ final class ReflectedBeanProperty implements BeanProperty {
         copy.addAll(coll);
         return unmodifiableList(copy);
     }
+
+    /**
+     * The property name of the specified method.
+     *
+     * @param method The method to interpret as getter or setter
+     * @return The property name or {@code null} if the method is not a getter or setter.
+     */
+    static String propertyNameOf(Method method) {
+        String name = null;
+        int params = method.getParameterTypes().length;
+        if (params == 0 && method.getName().startsWith("is") && isBoolean(method.getReturnType())) {
+            char[] nm = method.getName().substring(2).toCharArray();
+            if (nm.length > 0) {
+                nm[0] = Character.toLowerCase(nm[0]);
+                name = new String(nm);
+            }
+        } else if (params == 0 && method.getName().startsWith("get") && !isVoid(method.getReturnType())) {
+            char[] nm = method.getName().substring(3).toCharArray();
+            if (nm.length > 0) {
+                nm[0] = Character.toLowerCase(nm[0]);
+                name = new String(nm);
+            }
+        } else if (params == 1 && method.getName().startsWith("set") && isVoid(method.getReturnType())) {
+            char[] nm = method.getName().substring(3).toCharArray();
+            if (nm.length > 0) {
+                nm[0] = Character.toLowerCase(nm[0]);
+                name = new String(nm);
+            }
+        }
+        return name;
+    }
+
+    private static String validateSameName(String current, String newName) {
+        if (current == null) {
+            if (newName == null) throw new IllegalArgumentException("Property name is <null>.");
+        } else if (!current.equals(newName)) {
+            throw new IllegalArgumentException("Property name difference: \"" + current + "\" vs. \"" + newName + "\".");
+        }
+        return newName;
+    }
+
+    private static boolean isBoolean(Class<?> type) {
+        return boolean.class.equals(type) || Boolean.class.isAssignableFrom(type);
+    }
+
+    private static boolean isVoid(Class<?> type) {
+        return void.class.equals(type) || Void.class.isAssignableFrom(type);
+    }
+
 }

@@ -280,7 +280,6 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <additionalparam>
                                 -umlImageFormat SVG
-                                -umlImageDirectory images
                                 -umlCommand "hide empty fields"
                                 -umlCommand "hide empty methods"
                             </additionalparam>
