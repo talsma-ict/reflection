@@ -27,10 +27,10 @@ public class ReflectedBeanPropertyTest {
     @Test
     public void testConstructor_nulls() {
         try {
-            new ReflectedBeanProperty(null, null);
+            new ReflectedBeanProperty(null, null, null);
             fail("Exception expected.");
         } catch (RuntimeException expected) {
-            assertThat(expected, hasToString(containsString("Either property descriptor or field must be provided")));
+            assertThat(expected, hasToString(containsString("Either a field or getter/setter method must be provided")));
         }
     }
 

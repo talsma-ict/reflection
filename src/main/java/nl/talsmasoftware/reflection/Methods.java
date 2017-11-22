@@ -19,11 +19,13 @@ import nl.talsmasoftware.reflection.errorhandling.MethodInvocationException;
 import nl.talsmasoftware.reflection.errorhandling.MissingMethodException;
 import nl.talsmasoftware.reflection.errorhandling.ReflectionException;
 
+import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +45,12 @@ import static nl.talsmasoftware.reflection.Classes.typesOf;
 public final class Methods {
 
     private static final Logger LOGGER = Logger.getLogger(Methods.class.getName());
+
+    /**
+     * Cache, similar to the Introspector method cache.
+     */
+    private static final Map<Class<?>, Reference<Method[]>> DECLARED_METHOD_CACHE =
+            new WeakHashMap<Class<?>, Reference<Method[]>>();
 
     private Methods() {
         throw new UnsupportedOperationException();
@@ -228,6 +236,33 @@ public final class Methods {
     }
 
     /**
+     * Returns {@link Class#getDeclaredMethods()} while trying to maintain the actual declaration order from the class
+     * file.
+     * <p>
+     * This is not guaranteed to work or result in more sensible ordering.
+     * As fallback, the method order is returned as-is by the class.
+     *
+     * @param type The type to return the {@code declared methods} for.
+     * @return The declared methods for the type.
+     */
+    public static Method[] getDeclaredMethods(Class type) {
+        Method[] methods = null;
+        if (type != null) {
+            synchronized (DECLARED_METHOD_CACHE) {
+                Reference<Method[]> reference = DECLARED_METHOD_CACHE.get(type);
+                if (reference != null) methods = reference.get();
+            }
+            if (methods == null) {
+                methods = reflectDeclaredMethodsFor(type);
+                synchronized (DECLARED_METHOD_CACHE) {
+                    DECLARED_METHOD_CACHE.put(type, new WeakReference<Method[]>(methods));
+                }
+            }
+        }
+        return methods;
+    }
+
+    /**
      * @param method The method to return the fully-qualified-name of.
      * @return The fully qualified name (including declaring type) of the method,
      * or <code>"&lt;null&gt;"</code> if no method was passed.
@@ -245,7 +280,7 @@ public final class Methods {
     private static Set<Method> allMethodsNamed(Class<?> type, String name) {
         Set<Method> allMethods = new LinkedHashSet<Method>();
         while (type != null) {
-            for (Method method : type.getDeclaredMethods()) if (method.getName().equals(name)) allMethods.add(method);
+            for (Method method : getDeclaredMethods(type)) if (method.getName().equals(name)) allMethods.add(method);
             type = type.getSuperclass();
         }
         return allMethods;
@@ -262,4 +297,85 @@ public final class Methods {
         return true;
     }
 
+    private static Method[] reflectDeclaredMethodsFor(Class type) {
+        Method[] methods = type.getDeclaredMethods();
+        try {
+            String rawClassString = readClass(type);
+            if (rawClassString != null) {
+                // Get the part between the LineNumberTable and SourceFile from the class.
+                int idx = rawClassString.indexOf("LineNumberTable");
+                if (idx >= 0) rawClassString = rawClassString.substring(idx + "LineNumberTable".length() + 3);
+                idx = rawClassString.lastIndexOf("SourceFile");
+                if (idx >= 0) rawClassString = rawClassString.substring(0, idx);
+
+                MethodPosition[] offsets = calculateMethodPositions(rawClassString, methods);
+                Arrays.sort(offsets);
+                for (int i = 0; i < offsets.length; ++i) methods[i] = offsets[i].method;
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINEST, "Exception sorting methods by declararion order: " + ex.getMessage(), ex);
+        }
+        return methods;
+    }
+
+    private static String readClass(Class type) throws IOException {
+        String classResource = type.getName().replace('.', '/') + ".class";
+        InputStream in = type.getClassLoader().getResourceAsStream(classResource);
+        if (in == null) return null;
+        try {
+            Reader reader = new InputStreamReader(in, "UTF-8");
+            StringWriter writer = new StringWriter();
+            char[] buf = new char[1024];
+            for (int read = reader.read(buf); read >= 0; read = reader.read(buf)) writer.write(buf, 0, read);
+            return writer.toString();
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.FINER, "Couldn't close stream to " + type + ": " + ioe.getMessage(), ioe);
+            }
+        }
+    }
+
+    private static MethodPosition[] calculateMethodPositions(String rawClassData, Method[] methods) {
+        // Sort by method.name length
+        Arrays.sort(methods, new Comparator<Method>() {
+            public int compare(Method a, Method b) {
+                return Integer.signum(b.getName().length() - a.getName().length());
+            }
+        });
+
+        MethodPosition positions[] = new MethodPosition[methods.length];
+        for (int i = 0; i < methods.length; i++) {
+            String methodName = methods[i].getName();
+            int pos = rawClassData.indexOf(methodName);
+            while (pos >= 0) {
+                boolean subset = false;
+                for (int j = 0; j < i && !subset; j++)
+                    subset = positions[j].pos >= 0
+                            && positions[j].pos <= pos
+                            && pos < positions[j].pos + positions[j].method.getName().length();
+                if (!subset) break;
+                pos = rawClassData.indexOf(methodName, pos + methodName.length());
+            }
+            positions[i] = new MethodPosition(methods[i], pos);
+        }
+        return positions;
+    }
+
+    // Container that compares methods based on their position in the raw class.
+    private static final class MethodPosition implements Comparable<MethodPosition> {
+        private final Method method;
+        private final int pos;
+
+        private MethodPosition(Method method, int pos) {
+            this.method = method;
+            this.pos = pos;
+        }
+
+        @Override
+        public int compareTo(MethodPosition target) {
+            return Integer.signum(this.pos - target.pos);
+        }
+    }
 }
