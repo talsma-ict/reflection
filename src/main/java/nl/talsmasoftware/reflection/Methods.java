@@ -320,7 +320,7 @@ public final class Methods {
                 for (int i = 0; i < offsets.length; ++i) methods[i] = offsets[i].method;
             }
         } catch (Exception ex) {
-            LOGGER.log(Level.FINEST, "Exception sorting methods by declararion order: " + ex.getMessage(), ex);
+            LOGGER.log(Level.FINEST, "Exception sorting methods by declaration order: " + ex.getMessage(), ex);
         }
         return methods;
     }
