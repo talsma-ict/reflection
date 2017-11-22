@@ -246,6 +246,17 @@ public final class Methods {
      * @return The declared methods for the type.
      */
     public static Method[] getDeclaredMethods(Class type) {
+        Method[] result = rawDeclaredMethodsOf(type);
+        if (result != null) result = result.clone();
+        return result;
+    }
+
+    /**
+     * The cached, raw and uncloned declared methods.
+     * <p>
+     * <strong>Important:</strong> do not expose outside of this class.
+     */
+    private static Method[] rawDeclaredMethodsOf(Class type) {
         Method[] methods = null;
         if (type != null) {
             synchronized (DECLARED_METHOD_CACHE) {
@@ -280,7 +291,7 @@ public final class Methods {
     private static Set<Method> allMethodsNamed(Class<?> type, String name) {
         Set<Method> allMethods = new LinkedHashSet<Method>();
         while (type != null) {
-            for (Method method : getDeclaredMethods(type)) if (method.getName().equals(name)) allMethods.add(method);
+            for (Method method : rawDeclaredMethodsOf(type)) if (method.getName().equals(name)) allMethods.add(method);
             type = type.getSuperclass();
         }
         return allMethods;
@@ -373,7 +384,6 @@ public final class Methods {
             this.pos = pos;
         }
 
-        @Override
         public int compareTo(MethodPosition target) {
             return Integer.signum(this.pos - target.pos);
         }
