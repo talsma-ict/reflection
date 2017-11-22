@@ -252,7 +252,7 @@ public final class Methods {
     /**
      * The cached, raw and uncloned declared methods.
      * <p>
-     * <strong>Important:</strong> do not expose outside of this class.
+     * <strong>Important:</strong> do not expose outside of this class without cloning!
      */
     private static Method[] rawDeclaredMethodsOf(Class type) {
         Method[] methods = null;
