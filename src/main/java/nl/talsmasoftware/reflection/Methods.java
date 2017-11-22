@@ -246,9 +246,7 @@ public final class Methods {
      * @return The declared methods for the type.
      */
     public static Method[] getDeclaredMethods(Class type) {
-        Method[] result = rawDeclaredMethodsOf(type);
-        if (result != null) result = result.clone();
-        return result;
+        return type == null ? null : rawDeclaredMethodsOf(type).clone();
     }
 
     /**
@@ -258,16 +256,14 @@ public final class Methods {
      */
     private static Method[] rawDeclaredMethodsOf(Class type) {
         Method[] methods = null;
-        if (type != null) {
+        synchronized (DECLARED_METHOD_CACHE) {
+            Reference<Method[]> reference = DECLARED_METHOD_CACHE.get(type);
+            if (reference != null) methods = reference.get();
+        }
+        if (methods == null) {
+            methods = reflectDeclaredMethodsFor(type);
             synchronized (DECLARED_METHOD_CACHE) {
-                Reference<Method[]> reference = DECLARED_METHOD_CACHE.get(type);
-                if (reference != null) methods = reference.get();
-            }
-            if (methods == null) {
-                methods = reflectDeclaredMethodsFor(type);
-                synchronized (DECLARED_METHOD_CACHE) {
-                    DECLARED_METHOD_CACHE.put(type, new WeakReference<Method[]>(methods));
-                }
+                DECLARED_METHOD_CACHE.put(type, new WeakReference<Method[]>(methods));
             }
         }
         return methods;
