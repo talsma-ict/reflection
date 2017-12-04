@@ -55,15 +55,17 @@ final class ReflectedBeanProperty implements BeanProperty {
         Class<?> tp = field == null ? null : field.getType();
         if (getter != null) {
             nm = validateSameName(nm, propertyNameOf(getter));
-            Class<?> getterTp = getter.getReturnType();
-            if (tp == null) tp = getterTp;
-            else if (!getterTp.isAssignableFrom(tp)) throw new IllegalArgumentException("Incompatible getter type.");
+            tp = getter.getReturnType();
+            // Bug #17: Type assumptions for bean fields are too strong.
+//            Class<?> getterTp = getter.getReturnType();
+//            if (tp == null) tp = getterTp;
+//            else if (!getterTp.isAssignableFrom(tp)) throw new IllegalArgumentException("Incompatible getter type.");
         }
         if (setter != null) {
             nm = validateSameName(nm, propertyNameOf(setter));
             Class<?> setterTp = setter.getParameterTypes()[0];
             if (tp == null) tp = setterTp;
-            else if (!tp.isAssignableFrom(setterTp)) throw new IllegalArgumentException("Incompatible setter type.");
+//            else if (!tp.isAssignableFrom(setterTp)) throw new IllegalArgumentException("Incompatible setter type.");
         }
         if (nm == null || tp == null) {
             throw new IllegalStateException("Either a field or getter/setter method must be provided!");
