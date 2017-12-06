@@ -35,7 +35,7 @@ script:
   - .travis/publish.sh
 
 after_success:
-  - mvn jacoco:report coveralls:report
+  - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
 
 branches:
   except:
