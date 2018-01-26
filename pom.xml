@@ -280,11 +280,11 @@
                             </docletArtifact>
                             <docencoding>UTF-8</docencoding>
                             <useStandardDocletOptions>true</useStandardDocletOptions>
-                            <additionalparam>
-                                -umlImageFormat SVG
-                                -umlCommand "hide empty fields"
-                                -umlCommand "hide empty methods"
-                            </additionalparam>
+                            <additionalOptions>
+                                <additionalOption>-umlImageFormat SVG</additionalOption>
+                                <additionalOption>-umlCommand "hide empty fields"</additionalOption>
+                                <additionalOption>-umlCommand "hide empty methods"</additionalOption>
+                            </additionalOptions>
                             <sourceFileExcludes>
                                 <sourceFileExclude>module-info.java</sourceFileExclude>
                             </sourceFileExcludes>
