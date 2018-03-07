@@ -53,6 +53,32 @@ it can easily be instantiated for any bean by the static `reflect` method.
 Contains the exception types that can be thrown by this library,
 all subclasses of `java.lang.RuntimeException`.
 
+# Java 9 module concerns
+
+If you're using the Java 9 module system (e.g. project _jigsaw_),
+you can still use this reflection library. Actually the library itself is
+neatly published as a java 9 module called `nl.talsmasoftware.reflection`
+even though the classes are still java 5 binary compatible.
+
+However, out of the box, our module cannot reflect your classes if you haven't _opened_ them up.
+So be sure to either declare your module as an `open` module or explicitly open up a 
+package for reflection by this module.
+
+Prepend your module with the `open` keyword to open it up for reflection like this:
+```java
+open module com.example.myapp {
+    requires nl.talsmasoftware.reflection;
+}
+```
+
+Or you can define a specific package for reflection:
+```java
+module com.example.myapp {
+    opens com.example.myapp.dto to nl.talsmasoftware.reflection;
+    requires nl.talsmasoftware.reflection;
+}
+```
+
 
   [ci-img]: https://img.shields.io/travis/talsma-ict/reflection/master.svg
   [ci]: https://travis-ci.org/talsma-ict/reflection
