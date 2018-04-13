@@ -32,13 +32,11 @@ before_install:
   - echo "https://$GH_TOKEN:@github.com" > .git/credentials
 
 install:
-  # Override default travis to use the maven wrapper
-#  - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
   - ./mvnw --version
 
 script:
-#  - .travis/publish.sh
  - ./mvnw clean verify
+ - .travis/release.sh
 
 after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
@@ -47,3 +45,4 @@ deploy:
   - provider: script
     script:   .travis/deploy.sh
     skip_cleanup: true
+# TODO: Deploy releases to github
