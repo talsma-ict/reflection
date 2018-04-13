@@ -48,9 +48,9 @@ is_travis_branch_master() {
 }
 
 check_travis_branch_equals_travis_tag() {
-  #Weird comparison comparing branch to tag because when you 'git push --tags'
-  #the branch somehow becomes the tag value
-  #github issue: https://github.com/travis-ci/travis-ci/issues/1675
+  # Weird comparison comparing branch to tag because when you 'git push --tags'
+  # the branch somehow becomes the tag value
+  # github issue: https://github.com/travis-ci/travis-ci/issues/1675
   if [ "${TRAVIS_BRANCH}" != "${TRAVIS_TAG}" ]; then
     echo "Travis branch does not equal Travis tag, which it should, bailing out."
     echo "  github issue: https://github.com/travis-ci/travis-ci/issues/1675"
@@ -110,15 +110,15 @@ if ! is_pull_request && build_started_by_tag; then
   check_release_tag
 fi
 
-./mvnw -nsu verify
+./mvnw clean verify
 
-# If we are on a pull request, our only job is to run tests, which happened above via ./mvnw install
+# If we are on a pull request, our only job is to run tests, which happened above via ./mvnw verify
 if is_pull_request; then
   true
 # If we are on master, we will deploy the latest snapshot or release version
 #   - If a release commit fails to deploy for a transient reason, delete the broken version from bintray and click rebuild
 elif is_travis_branch_master; then
-  ./mvnw --batch-mode -Prelease -nsu -DskipTests deploy
+  ./mvnw --batch-mode -nsu -Drelease -DskipTests deploy
 
 # If we are on a release tag, the following will update any version references and push a version tag for deployment.
 elif build_started_by_tag; then
