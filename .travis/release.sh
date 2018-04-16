@@ -50,7 +50,6 @@ create_release_branch() {
     # Delete the 'release-x.y.z' tag and create a new 'release/x.y.z' branch, push it to 'origin'
     local release_version="${1:-}"
     validate_version ${release_version}
-    remove_release_tag ${release_version}
     echo "[Release] Pushing new 'release/${release_version}' branch."
     git checkout -b release/${release_version}
     git push origin release/${release_version}
@@ -65,28 +64,18 @@ merge_to_master() {
     echo "[Release] TODO: merge ${TRAVIS_BRANCH} back to master"
 }
 
-perform_release() {
-    local release_version="${1:-}"
-    validate_version ${release_version}
-    set_version ${release_version}
-    publish_artifacts
-}
-
 #----------------------
 # MAIN
 #----------------------
 
-# 1. Detect 'release-x.y.z' tags on develop and master branches
-#    --> create 'release/x.y.z' branch to automatically perform the release.
-# 2. Detect 'release/x.y.z' branch
-#    --> set version to 'x.y.z'
-#    --> build & test
-#    --> tag 'vx.y.z' (on release/x.y.z)
-
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "[Release] Not releasing from pull-request ${TRAVIS_PULL_REQUEST}."
 elif is_release_version ${TRAVIS_BRANCH}; then
-    perform_release `echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
+    local version=`echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
+    validate_version ${release_version}
+    set_version ${release_version}
+    publish_artifacts
+    merge_to_master
 elif [[ ! "${TRAVIS_BRANCH}" =~ ^develop|master$ ]]; then
     echo "[Release] Not releasing from branch '${TRAVIS_BRANCH}'."
 elif is_release_version ${TRAVIS_TAG}; then
@@ -95,5 +84,6 @@ elif is_release_version ${TRAVIS_TAG}; then
     remove_release_tag ${version}
     create_release_branch ${version}
 else
+    # TODO Check for SNAPSHOT + deploy
     echo "[Release] No 'release-x.y.z' tag found, skipping release."
 fi
