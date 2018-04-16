@@ -110,11 +110,12 @@ if ! is_pull_request && build_started_by_tag; then
   check_release_tag
 fi
 
-./mvnw clean verify
+./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false
 
 # If we are on a pull request, our only job is to run tests, which happened above via ./mvnw verify
 if is_pull_request; then
   true
+
 # If we are on master, we will deploy the latest snapshot or release version
 #   - If a release commit fails to deploy for a transient reason, delete the broken version from bintray and click rebuild
 elif is_travis_branch_master; then
