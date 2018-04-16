@@ -8,17 +8,39 @@ is_semantic_version() {
     if [[ ${1:-} =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\.]+)*(\+[A-Za-z0-9\.\-]+)?$ ]]; then return 0; else return 1; fi
 }
 
+validate_version() {
+    local version="${1:-}"
+    if ! is_semantic_version ${version}; then
+        echo "[Release] Not a valid version: '${version}'!"
+        exit 1
+    fi
+}
+
 is_release_version() {
     # Test whether the first argument starts with either 'release-' or 'release/' followed by a valid semantic version
     if [[ ${1:-} =~ ^release[/\-].*$ ]]; then is_semantic_version `echo ${1} | sed 's/^release[/-]//'`; else return 1; fi
 }
 
+find_release_tag() {
+    local tag=`git tag -l --points-at HEAD | grep '^release-' | sed "s/release-//g"`
+    echo ${tag:-}
+}
+
+remove_release_tag() {
+    local release_version="${1:-}"
+    validate_version ${release_version}
+    echo "[Release] Removing tag 'release-${release_version}'."
+    git tag --delete "release-${release_version}"
+    git push --delete origin "release-${release_version}" || return 0
+}
+
+get_version() {
+    TODO
+}
+
 set_version() {
-    project_version="${1:-}"
-    if ! is_semantic_version ${project_version}; then
-        echo "[Release] Not a valid project version: '${project_version}'!"
-        exit 1
-    fi
+    local project_version="${1:-}"
+    validate_version ${project_version}
     echo "[Release] Setting project version to '${project_version}'."
     ./mvnw --batch-mode versions:set versions:commit -DnewVersion=${project_version}
     git commit -m "Release: Set version to ${project_version}"
@@ -26,13 +48,9 @@ set_version() {
 
 create_release_branch() {
     # Delete the 'release-x.y.z' tag and create a new 'release/x.y.z' branch, push it to 'origin'
-    release_version="${1:-}"
-    if ! is_semantic_version ${release_version}; then
-        echo "[Release] Not a valid version to be released: '${release_version}'!"
-        exit 1
-    fi
-    echo "[Release] Removing tag 'release-${release_version}'."
-    git push --delete origin release-${release_version}
+    local release_version="${1:-}"
+    validate_version ${release_version}
+    remove_release_tag ${release_version}
     echo "[Release] Pushing new 'release/${release_version}' branch."
     git checkout -b release/${release_version}
     git push origin release/${release_version}
@@ -48,11 +66,8 @@ merge_to_master() {
 }
 
 perform_release() {
-    release_version="${1:-}"
-    if ! is_semantic_version ${release_version}; then
-        echo "[Release] Not a valid version to be released: '${release_version}'!"
-        exit 1
-    fi
+    local release_version="${1:-}"
+    validate_version ${release_version}
     set_version ${release_version}
     publish_artifacts
 }
@@ -75,7 +90,10 @@ elif is_release_version ${TRAVIS_BRANCH}; then
 elif [[ ! "${TRAVIS_BRANCH}" =~ ^develop|master$ ]]; then
     echo "[Release] Not releasing from branch '${TRAVIS_BRANCH}'."
 elif is_release_version ${TRAVIS_TAG}; then
-    create_release_branch `echo ${TRAVIS_TAG} | sed 's/^release-//'`
+    local version=`echo ${TRAVIS_TAG} | sed 's/^release-//'`
+    validate_version ${version}
+    remove_release_tag ${version}
+    create_release_branch ${version}
 else
     echo "[Release] No 'release-x.y.z' tag found, skipping release."
 fi
