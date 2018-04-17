@@ -91,7 +91,6 @@ merge_release_to_master() {
 #
 
 mvn_command() {
-    # Does a sanity-check for being in a maven project and return either './mvnw' or 'mvn'.
     if [ ! -f pom.xml ]; then fatal "No maven POM file found!";
     elif [ -x ./mvnw ]; then echo "./mvnw";
     else echo "mvn";
@@ -103,14 +102,46 @@ get_maven_version() {
 }
 
 set_maven_version() {
-    log "[Release] Setting project version to '${1}'."
     $(mvn_command) --batch-mode versions:set versions:commit -DnewVersion="${1}"
-    git commit -m "Release: Set version to ${1}"
+    git commit -am "Release: Set project version to ${1}"
 }
 
 publish_maven_artifacts() {
     log "[Release] Publishing released artifacts to maven central."
-    ./mvnw --batch-mode -Prelease -nsu -DskipTests deploy
+    $(mvn_command) --batch-mode -Prelease -nsu -DskipTests deploy
+}
+
+#
+# Gradle
+#
+
+get_gradle_version() {
+    fatal "[Release] TODO Get project version using Gradle"
+}
+
+set_gradle_version() {
+    fatal "[Release] TODO Set project version using Gradle"
+}
+
+publish_gradle_artifacts() {
+    fatal "[Release] TODO Publish project artifacts using Gradle"
+}
+
+#
+# NPM
+#
+
+get_npm_version() {
+    echo $(npm version | head -1 | sed 's/.*'"'"'\(.*\)'"'"'.*/\1/g')
+}
+
+set_npm_version() {
+    npm version --no-git-tag-version "${1}"
+    git commit -am "Release: Set project version to ${1}"
+}
+
+publish_npm_artifacts() {
+    fatal "[Release] TODO Publish project artifacts using NPM"
 }
 
 #
@@ -119,6 +150,8 @@ publish_maven_artifacts() {
 
 get_version() {
     if [ -f pom.xml ]; then get_maven_version;
+    elif [ -f build.gradle ]; then get_gradle_version;
+    elif [ -f package.json ]; then get_npm_version;
     else fatal "[Release] ERROR: No known project structure to determine version of.";
     fi
 }
@@ -126,13 +159,19 @@ get_version() {
 set_version() {
     local project_version="${1:-}"
     validate_version ${project_version}
+    log "[Release] Setting project version to '${project_version}'."
+
     if [ -f pom.xml ]; then set_maven_version "${project_version}";
+    elif [ -f build.gradle ]; then set_gradle_version "${project_version}";
+    elif [ -f package.json ]; then set_npm_version "${project_version}"
     else fatal "[Release] ERROR: No known project structure to set version for.";
     fi
 }
 
 publish_artifacts() {
     if [ -f pom.xml ]; then publish_maven_artifacts;
+    elif [ -f build.gradle ]; then publish_gradle_artifacts;
+    elif [ -f package.json ]; then publish_npm_artifacts;
     else fatal "[Release] ERROR: No known project structure to publish artifacts for.";
     fi
 }
@@ -140,10 +179,6 @@ publish_artifacts() {
 #----------------------
 # MAIN
 #----------------------
-
-if ! is_snapshot_version "1.0.0-SNAPSHOT"; then fatal "[Release] ERROR Snapshot sanity check failed"; fi
-if ! is_release_version "release-1.0.0-alpha.1"; then fatal "[Release] ERROR Release sanity check failed"; fi
-if is_release_version "release-1.0.0-SNAPSHOT"; then fatal "[Release] ERROR Release sanity check failed"; fi
 
 VERSION=$(get_version)
 GIT_BRANCHES=$(find_remote_branches)
