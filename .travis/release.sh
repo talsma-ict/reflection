@@ -72,7 +72,7 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "[Release] Not releasing from pull-request ${TRAVIS_PULL_REQUEST}."
 elif is_release_version ${TRAVIS_BRANCH}; then
     echo "[Release] Releasing from branch ${TRAVIS_BRANCH}."
-    local version=`echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
+    release_version=`echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
     validate_version ${release_version}
     set_version ${release_version}
     publish_artifacts
@@ -81,10 +81,10 @@ elif [[ ! "${TRAVIS_BRANCH}" =~ ^develop|master$ ]]; then
     echo "[Release] Not releasing from branch '${TRAVIS_BRANCH}'."
 elif is_release_version ${TRAVIS_TAG}; then
     echo "[Release] Creating new release from tag ${TRAVIS_TAG}"
-    local version=`echo ${TRAVIS_TAG} | sed 's/^release-//'`
-    validate_version ${version}
-    remove_release_tag ${version}
-    create_release_branch ${version}
+    release_version=`echo ${TRAVIS_TAG} | sed 's/^release-//'`
+    validate_version ${release_version}
+    remove_release_tag ${release_version}
+    create_release_branch ${release_version}
 else
     # TODO Check for SNAPSHOT + deploy
     echo "[Release] No 'release-x.y.z' tag found, skipping release."
