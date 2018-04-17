@@ -71,6 +71,7 @@ merge_to_master() {
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "[Release] Not releasing from pull-request ${TRAVIS_PULL_REQUEST}."
 elif is_release_version ${TRAVIS_BRANCH}; then
+    echo "[Release] Releasing from branch ${TRAVIS_BRANCH}."
     local version=`echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
     validate_version ${release_version}
     set_version ${release_version}
@@ -79,6 +80,7 @@ elif is_release_version ${TRAVIS_BRANCH}; then
 elif [[ ! "${TRAVIS_BRANCH}" =~ ^develop|master$ ]]; then
     echo "[Release] Not releasing from branch '${TRAVIS_BRANCH}'."
 elif is_release_version ${TRAVIS_TAG}; then
+    echo "[Release] Creating new release from tag ${TRAVIS_TAG}"
     local version=`echo ${TRAVIS_TAG} | sed 's/^release-//'`
     validate_version ${version}
     remove_release_tag ${version}
