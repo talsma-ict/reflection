@@ -21,12 +21,31 @@ is_release_version() {
     if [[ ${1:-} =~ ^release[/\-].*$ ]]; then is_semantic_version `echo ${1} | sed 's/^release[/-]//'`; else return 1; fi
 }
 
+is_pull_request() {
+    git ls-remote origin | grep $(git rev-parse HEAD) | grep "refs/pull/"
+    return $?
+}
+
 find_release_tag() {
-    local tag=`git tag -l --points-at HEAD | grep '^release-' | sed "s/release-//g"`
+    local tag=`git tag -l --points-at HEAD | grep '^release-'`
     echo ${tag:-}
 }
 
+find_remote_branches() {
+    echo $(git ls-remote --heads origin | grep `git rev-parse HEAD` | sed "s/.*refs\/heads\///g")
+}
+
+# env:
+#     global:
+#         # get all the branches referencing this commit
+#         - REAL_BRANCH=$(git ls-remote origin | sed -n "\|$TRAVIS_COMMIT\s\+refs/heads/|{s///p}")
+#
+#         # or check if we are on a particular branch:
+#         - IS_RELEASE=$(git ls-remote origin | grep "$TRAVIS_COMMIT\s\+refs/heads/release$"
+# }
+
 remove_release_tag() {
+    # Delete the 'release-x.y.z' tag.
     local release_version="${1:-}"
     validate_version ${release_version}
     echo "[Release] Removing tag 'release-${release_version}'."
@@ -47,7 +66,7 @@ set_version() {
 }
 
 create_release_branch() {
-    # Delete the 'release-x.y.z' tag and create a new 'release/x.y.z' branch, push it to 'origin'
+    # Create a new 'release/x.y.z' branch, push it to 'origin'
     local release_version="${1:-}"
     validate_version ${release_version}
     echo "[Release] Pushing new 'release/${release_version}' branch."
@@ -60,28 +79,31 @@ publish_artifacts() {
     ./mvnw --batch-mode -Prelease -nsu -DskipTests deploy
 }
 
-merge_to_master() {
-    echo "[Release] TODO: merge ${TRAVIS_BRANCH} back to master"
+merge_release_to_master() {
+    echo "[Release] TODO: merge $(find_real_branch) back to master"
 }
 
 #----------------------
 # MAIN
 #----------------------
 
-if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-    echo "[Release] Not releasing from pull-request ${TRAVIS_PULL_REQUEST}."
-elif is_release_version ${TRAVIS_BRANCH}; then
-    echo "[Release] Releasing from branch ${TRAVIS_BRANCH}."
-    release_version=`echo ${TRAVIS_BRANCH} | sed 's/release[/]//'`
+GIT_BRANCHES=$(find_remote_branches)
+RELEASE_TAG=$(find_release_tag)
+
+if is_pull_request; then
+    echo "[Release] Not releasing from pull-request."
+elif is_release_version ${GIT_BRANCHES}; then
+    echo "[Release] Releasing from branch ${GIT_BRANCHES}."
+    release_version=`echo ${REAL_BRANCH} | sed 's/release[/]//'`
     validate_version ${release_version}
     set_version ${release_version}
     publish_artifacts
-    merge_to_master
-elif [[ ! "${TRAVIS_BRANCH}" =~ ^develop|master$ ]]; then
-    echo "[Release] Not releasing from branch '${TRAVIS_BRANCH}'."
-elif is_release_version ${TRAVIS_TAG}; then
-    echo "[Release] Creating new release from tag ${TRAVIS_TAG}"
-    release_version=`echo ${TRAVIS_TAG} | sed 's/^release-//'`
+    merge_release_to_master
+elif [[ ! "${GIT_BRANCHES}" =~ ^develop|master$ ]]; then
+    echo "[Release] Not releasing from branch '${GIT_BRANCHES}'."
+elif is_release_version ${RELEASE_TAG}; then
+    echo "[Release] Creating new release from tag ${RELEASE_TAG}"
+    release_version=`echo ${RELEASE_TAG} | sed 's/^release-//'`
     validate_version ${release_version}
     remove_release_tag ${release_version}
     create_release_branch ${release_version}
