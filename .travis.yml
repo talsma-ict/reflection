@@ -35,7 +35,7 @@ install:
   - ./mvnw --version
 
 script:
-  - ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false
+  - ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
   - DEBUG=true .travis/release.sh
 
 after_success:
