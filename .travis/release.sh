@@ -208,7 +208,7 @@ elif is_release_version ${GIT_BRANCH}; then
     set_version "${release_version}"
     publish_artifacts
     merge_release_to_master
-elif [[ ! "${GIT_BRANCH}" =~ ^develop|master$ ]]; then
+elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     log "[Release] Not releasing from branch '${GIT_BRANCH}'."
 elif is_release_version ${RELEASE_TAG}; then
     log "[Release] Creating new release from tag ${RELEASE_TAG}"
@@ -216,7 +216,9 @@ elif is_release_version ${RELEASE_TAG}; then
     validate_version ${release_version}
     delete_release_tag ${release_version}
     create_release_branch ${release_version}
+elif is_snapshot_version "${VERSION}"; then
+    log "[Release] Deploying snapshot from branch '${GIT_BRANCH}'."
+    publish_artifacts
 else
-    # TODO Check for SNAPSHOT + deploy
-    log "[Release] No 'release-x.y.z' tag found, skipping release."
+    log "[Release] Not publishing artifacts; no 'release-x.y.z' tag nor snapshot version found on branch '${GIT_BRANCH}'."
 fi
