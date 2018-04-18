@@ -78,8 +78,16 @@ get_local_branch() {
 }
 
 find_remote_branches() {
-    local remote_branches=$(git ls-remote --heads origin | grep `git rev-parse HEAD` | sed "s/.*refs\/heads\///g")
-    echo ${remote_branches}
+    echo $(git ls-remote --heads origin | grep `git rev-parse HEAD` | sed "s/.*refs\/heads\///g")
+}
+
+find_remote_branch() {
+    local local_branch="$(get_local_branch)"
+    local remote_branches=$(find_remote_branches)
+    if [[ -n "${local_branch:-}" && "${remote_branches}" = *"${local_branch}" ]]; then echo ${local_branch};
+    elif [[ -n "${TRAVIS_BRANCH:-}" && "${remote_branches}" = *"${TRAVIS_BRANCH}" ]]; then echo ${TRAVIS_BRANCH};
+    else echo ${remote_branches} | awk '{print $1}';
+    fi
 }
 
 merge_release_to_master() {
@@ -115,8 +123,15 @@ publish_maven_artifacts() {
 # Gradle
 #
 
+gradle_command() {
+    if [ ! -f build.gradle ]; then fatal "No gradle build file found!";
+    elif [ -x ./gradlew ]; then echo "./gradlew";
+    else echo "gradle";
+    fi
+}
+
 get_gradle_version() {
-    fatal "[Release] TODO Get project version using Gradle"
+    echo $($(gradle_command) properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]')
 }
 
 set_gradle_version() {
@@ -181,20 +196,20 @@ publish_artifacts() {
 #----------------------
 
 VERSION=$(get_version)
-GIT_BRANCHES=$(find_remote_branches)
+GIT_BRANCH=$(find_remote_branch)
 RELEASE_TAG=$(find_release_tag)
 
 if is_pull_request; then
     log "[Release] Not releasing from pull-request."
-elif is_release_version ${GIT_BRANCHES}; then
-    log "[Release] Releasing from branch ${GIT_BRANCHES}."
-    release_version=$(echo ${REAL_BRANCH} | sed 's/release[/]//')
+elif is_release_version ${GIT_BRANCH}; then
+    log "[Release] Releasing from branch ${GIT_BRANCH}."
+    release_version=$(echo ${GIT_BRANCH} | sed 's/release[/]//')
     validate_version "${release_version}"
     set_version "${release_version}"
     publish_artifacts
     merge_release_to_master
-elif [[ ! "${GIT_BRANCHES}" =~ ^develop|master$ ]]; then
-    log "[Release] Not releasing from branch '${GIT_BRANCHES}'."
+elif [[ ! "${GIT_BRANCH}" =~ ^develop|master$ ]]; then
+    log "[Release] Not releasing from branch '${GIT_BRANCH}'."
 elif is_release_version ${RELEASE_TAG}; then
     log "[Release] Creating new release from tag ${RELEASE_TAG}"
     release_version=`echo ${RELEASE_TAG} | sed 's/^release-//'`
