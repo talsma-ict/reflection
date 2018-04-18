@@ -115,8 +115,8 @@ set_maven_version() {
 }
 
 publish_maven_artifacts() {
-    log "[Release] Publishing released artifacts to maven central."
-    $(mvn_command) --batch-mode -Prelease -nsu -DskipTests deploy
+    log "[Release] Publishing project artifacts to maven central."
+    $(mvn_command) --batch-mode --no-snapshot-updates deploy -Drelease -DskipTests
 }
 
 #
