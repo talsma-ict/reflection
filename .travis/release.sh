@@ -116,7 +116,7 @@ set_maven_version() {
 
 publish_maven_artifacts() {
     log "[Release] Publishing project artifacts to maven central."
-    $(mvn_command) --batch-mode --no-snapshot-updates help:active-profiles deploy -Drelease -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
+    $(mvn_command) --batch-mode --no-snapshot-updates -Prelease deploy -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
 }
 
 #
