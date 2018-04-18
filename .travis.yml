@@ -35,11 +35,11 @@ install:
   - ./mvnw --version
 
 script:
- - ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false
- - .travis/release.sh
+  - ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
 
 after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
+  - DEBUG=true .travis/release.sh
 
 deploy:
   provider: script
