@@ -104,6 +104,18 @@ find_remote_branch() {
     fi
 }
 
+switch_to_branch() {
+    log "[Release] Switching to branch ${1}"
+    git checkout "${1}"
+    git pull
+}
+
+validate_merged_with_remote_branch() {
+    if ! git branch -a --merged | grep "remotes/.*/${1}" > /dev/null; then
+        fatal "FATAL - Git is not up-to-date with remote branch ${1}, please merge first before proceeding."
+    fi
+}
+
 #
 # Maven
 #
@@ -210,14 +222,39 @@ release_and_finish_branch() {
     release_version=$(echo ${release_branch} | sed 's/release[/]//')
     validate_version "${release_version}"
     if is_snapshot_version "${release_version}"; then fatal "[Release] ERROR Bad release branch: ${release_branch}"; fi
-    if [[ $(get_local_branch) != ${release_branch} ]]; then git checkout ${release_branch}; fi
+    if [[ $(get_local_branch) != ${release_branch} ]]; then
+        switch_to_branch ${release_branch}
+    fi
     if [[ $(get_version) != ${release_version} ]]; then
         set_version "${release_version}"
-        git commit -am "Set version to ${release_version}"
+        git commit --sign -am "Set version to ${release_version}"
     fi
+
+    # Publish release and push a tag
     publish_artifacts
-    # tag_release ${release_version}
-    # merge_release_to_master ${GIT_BRANCH} ${release_version}
+    local tagname="v${release_version}"
+    log "[Release] Tagging published code with '${tagname}'"
+    git tag --sign -m "Publish version ${release_version}" "${tagname}"
+    git push origin "${tagname}"
+
+    # Merge to master and delete release branch (local+remote)
+    log "[Release] Merging ${release_branch} to master"
+    switch_to_branch master
+    git merge --no-edit --ff-only "${release_branch}"
+    git push origin master
+    validate_merged_with_remote master
+    git branch -d "${release_branch}"
+    git push origin --delete "${release_branch}"
+
+    # Merge to develop and switch to next snapshot version
+    local nextSnapshot=$(next_snapshot_version ${release_version})
+    log "[Release] Merging release to develop and updating version to ${nextSnapshot}"
+    switch_to_branch develop
+    validate_merged_with_remote develop
+    git merge --no-edit master
+    set_version ${nextSnapshot}
+    git commit --sign -am "Set version to ${nextSnapshot}"
+    git push origin develop
 }
 
 #----------------------
