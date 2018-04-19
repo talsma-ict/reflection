@@ -4,8 +4,12 @@ set -eu -o pipefail
 
 if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
+debug() {
+    local message=${1:-}
+}
+
 log() {
-    message=${1:-}
+    local message=${1:-}
     echo "$message" 1>&2
 }
 
@@ -41,6 +45,16 @@ is_release_version() {
         is_semantic_version "${version}" && ! is_snapshot_version "${version}";
     else return 1;
     fi
+}
+
+next_snapshot_version() {
+    local original="${1:-}"
+    validate_version "${original}"
+    read base minor suffix <<<$(echo ${original} | perl -pe 's/^(.*?)([0-9]+)([^0-9]*)$/\1 \2 \3/')
+    if ! is_snapshot_version ${original}; then suffix=${suffix}-SNAPSHOT; fi
+    local nextSnapshot="${base}$((minor+1))${suffix}"
+    debug "[Release] Next development version from ${original} is ${nextSnapshot}"
+    echo ${nextSnapshot}
 }
 
 #
@@ -88,10 +102,6 @@ find_remote_branch() {
     elif [[ -n "${TRAVIS_BRANCH:-}" && "${remote_branches}" = *"${TRAVIS_BRANCH}" ]]; then echo ${TRAVIS_BRANCH};
     else echo ${remote_branches} | awk '{print $1}';
     fi
-}
-
-merge_release_to_master() {
-    log "[Release] TODO: merge $(find_real_branch) back to master"
 }
 
 #
@@ -191,23 +201,38 @@ publish_artifacts() {
     fi
 }
 
+#
+# Release proces
+#
+
+release_and_finish_branch() {
+    local release_branch="${1:-}"
+    release_version=$(echo ${release_branch} | sed 's/release[/]//')
+    validate_version "${release_version}"
+    if is_snapshot_version "${release_version}"; then fatal "[Release] ERROR Bad release branch: ${release_branch}"; fi
+    if [[ $(get_local_branch) != ${release_branch} ]]; then git checkout ${release_branch}; fi
+    if [[ $(get_version) != ${release_version} ]]; then
+        set_version "${release_version}"
+        git commit -am "Set version to ${release_version}"
+    fi
+    publish_artifacts
+    # tag_release ${release_version}
+    # merge_release_to_master ${GIT_BRANCH} ${release_version}
+}
+
 #----------------------
 # MAIN
 #----------------------
 
-VERSION=$(get_version)
-GIT_BRANCH=$(find_remote_branch)
-RELEASE_TAG=$(find_release_tag)
+[ -n "${VERSION:-}" ] || VERSION=$(get_version)
+[ -n "${GIT_BRANCH:-}" ] || GIT_BRANCH=$(find_remote_branch)
+[ -n "${RELEASE_TAG:-}" ] || RELEASE_TAG=$(find_release_tag)
 
 if is_pull_request; then
     log "[Release] Not releasing from pull-request."
 elif is_release_version ${GIT_BRANCH}; then
     log "[Release] Releasing from branch ${GIT_BRANCH}."
-    release_version=$(echo ${GIT_BRANCH} | sed 's/release[/]//')
-    validate_version "${release_version}"
-    set_version "${release_version}"
-    publish_artifacts
-    merge_release_to_master
+    release_and_finish_branch "${GIT_BRANCH}"
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     log "[Release] Not releasing from branch '${GIT_BRANCH}'."
 elif is_release_version ${RELEASE_TAG}; then

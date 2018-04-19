@@ -5,6 +5,14 @@ if [[ "${DEBUG}" =~ ^yes|true$ ]]; then set -x; fi
 
 must_restart=false
 
+# Nice trick to explain errors from an action:
+#   output=$( some-action 2>&1) || {
+#       if [[ "${output}" =~ "A specific technical message" ]]; then
+#           echo "Provide friendly explanation and how to solve it."
+#       else echo "${output}"; fi
+#       exit 1
+#   }
+
 check_for_updates() {
     do_check_for_updates || echo "[ERROR] Problem checking for updates"
 }
