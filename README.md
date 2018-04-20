@@ -84,7 +84,7 @@ module com.example.myapp {
 [Apache 2.0 license](LICENSE)
 
 
-  [ci-img]: https://img.shields.io/travis/talsma-ict/reflection/master.svg
+  [ci-img]: https://img.shields.io/travis/talsma-ict/reflection/develop.svg
   [ci]: https://travis-ci.org/talsma-ict/reflection
   [maven-img]: https://img.shields.io/maven-central/v/nl.talsmasoftware/reflection.svg
   [maven]: http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22nl.talsmasoftware%22%20AND%20a%3A%22reflection%22
