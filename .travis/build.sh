@@ -254,7 +254,7 @@ build_and_publish_artifacts() {
 
 perform_release() {
     local version=Unknown
-    local branch=$1
+    local branch="${1:-}"
     debug "Performing release from branch $branch."
     if is_release_version $branch; then
         version=${branch#*/}
@@ -278,26 +278,26 @@ perform_release() {
     local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
     git tag -m "Publish version ${version}" "${tagname}"
-#    git push origin "${tagname}"
 
-#    # Merge to master and delete release branch (local+remote)
-#    log "Merging ${release_branch} to master"
-#    switch_to_branch master
-#    git merge --no-edit --ff-only "${release_branch}"
+    # Merge to master and delete release branch (local+remote)
+    log "Merging ${release_branch} to master"
+    switch_to_branch master
+    git merge --no-edit --ff-only "${release_branch}"
+    git branch -d "${release_branch}"
+
+    # Merge to develop and switch to next snapshot version
+    local nextSnapshot=$(next_snapshot_version ${version})
+    log "Merging to develop and updating version to ${nextSnapshot}"
+    switch_to_branch develop
+    git merge --no-edit master
+    set_version ${nextSnapshot}
+    git commit -am "Release: Set version to ${nextSnapshot}"
+
+    # Pushing local changes to remote
+#    git push origin "${tagname}"
 #    git push origin master
-#    validate_merged_with_remote master
-#    git branch -d "${release_branch}"
-#    git push origin --delete "${release_branch}"
-#
-#    # Merge to develop and switch to next snapshot version
-#    local nextSnapshot=$(next_snapshot_version ${release_version})
-#    log "Merging release to develop and updating version to ${nextSnapshot}"
-#    switch_to_branch develop
-#    validate_merged_with_remote develop
-#    git merge --no-edit master
-#    set_version ${nextSnapshot}
-#    git commit -am "Release: Set version to ${nextSnapshot}"
 #    git push origin develop
+#    git push origin --delete "${release_branch}"
 }
 
 #----------------------
