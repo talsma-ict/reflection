@@ -10,7 +10,7 @@ if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
 SCRIPTNAME=$(basename ${0%.*})
 debug() {
-    local message=${SCRIPTNAME} ${1:-}
+    local message="[${SCRIPTNAME}] ${1:-}"
 }
 
 log() {
@@ -119,6 +119,11 @@ switch_to_branch() {
     git pull
 }
 
+create_branch() {
+    log "Creating and switching to branch ${1}"
+    git checkout -b "${1}"
+}
+
 validate_merged_with_remote_branch() {
     if ! git branch -a --merged | grep "remotes/.*/${1}" > /dev/null; then
         fatal "FATAL - Git is not up-to-date with remote branch ${1}, please merge first before proceeding."
@@ -144,7 +149,14 @@ set_maven_version() {
     $(mvn_command) --batch-mode versions:set versions:commit -DnewVersion="${1}"
 }
 
-publish_maven_artifacts() {
+build_and_test_maven() {
+    log "Building and Testing project."
+    $(mvn_command) --batch-mode clean verify -Dmaven.test.failure.ignore=false
+}
+
+build_and_publish_maven_artifacts() {
+    log "Building and Testing project."
+    $(mvn_command) --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
     log "Publishing project artifacts to maven central."
     $(mvn_command) --batch-mode --no-snapshot-updates -Prelease deploy -DskipTests
 }
@@ -168,7 +180,11 @@ set_gradle_version() {
     fatal "TODO Set project version using Gradle"
 }
 
-publish_gradle_artifacts() {
+build_and_test_gradle() {
+    fatal "TODO Build and test project using Gradle"
+}
+
+build_and_publish_gradle_artifacts() {
     fatal "TODO Publish project artifacts using Gradle"
 }
 
@@ -184,7 +200,11 @@ set_npm_version() {
     npm version --no-git-tag-version "${1}"
 }
 
-publish_npm_artifacts() {
+build_and_test_npm() {
+    fatal "TODO Build and test project using NPM"
+}
+
+build_and_publish_npm_artifacts() {
     fatal "TODO Publish project artifacts using NPM"
 }
 
@@ -212,10 +232,18 @@ set_version() {
     fi
 }
 
-publish_artifacts() {
-    if [ -f pom.xml ]; then publish_maven_artifacts;
-    elif [ -f build.gradle ]; then publish_gradle_artifacts;
-    elif [ -f package.json ]; then publish_npm_artifacts;
+build_and_test() {
+    if [ -f pom.xml ]; then build_and_test_maven;
+    elif [ -f build.gradle ]; then build_and_test_gradle;
+    elif [ -f package.json ]; then build_and_test_npm;
+    else fatal "ERROR: No known project structure to publish artifacts for.";
+    fi
+}
+
+build_and_publish_artifacts() {
+    if [ -f pom.xml ]; then build_and_publish_maven_artifacts;
+    elif [ -f build.gradle ]; then build_and_publish_gradle_artifacts;
+    elif [ -f package.json ]; then build_and_publish_npm_artifacts;
     else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
@@ -224,44 +252,52 @@ publish_artifacts() {
 # Release proces
 #
 
-release_and_finish_branch() {
-    local release_branch="${1:-}"
-    release_version=$(echo ${release_branch} | sed 's/release[/]//')
-    validate_version "${release_version}"
-    if is_snapshot_version "${release_version}"; then fatal "ERROR Bad release branch: ${release_branch}"; fi
-    if [[ $(get_local_branch) != ${release_branch} ]]; then
-        switch_to_branch ${release_branch}
-    fi
-    if [[ $(get_version) != ${release_version} ]]; then
-        set_version "${release_version}"
-        git commit -am "Release: Set project version to ${release_version}"
+perform_release() {
+    local version=Unknown
+    local branch=$1
+    debug "Performing release from branch $branch."
+    if is_release_version $branch; then
+        version=${branch#*/}
+        validate_version "${version}"
+        switch_to_branch $branch
+    else
+        version=${RELEASE_TAG#*-}
+        validate_version "${version}"
+        if is_snapshot_version "${version}"; then fatal "ERROR Bad release version: ${version}"; fi
+        branch="release/${version}"
+        create_branch $branch
     fi
 
-    # Publish release and push a tag
-    # publish_artifacts
-    local tagname="v${release_version}"
+    if [[ $(get_version) != ${version} ]]; then
+        set_version "${version}"
+        git commit -am "Release: Set project version to ${version}"
+    fi
+
+    # build_and_publish_artifacts
+
+    local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
-    git tag -m "Publish version ${release_version}" "${tagname}"
-    git push origin "${tagname}"
+    git tag -m "Publish version ${version}" "${tagname}"
+#    git push origin "${tagname}"
 
-    # Merge to master and delete release branch (local+remote)
-    log "Merging ${release_branch} to master"
-    switch_to_branch master
-    git merge --no-edit --ff-only "${release_branch}"
-    git push origin master
-    validate_merged_with_remote master
-    git branch -d "${release_branch}"
-    git push origin --delete "${release_branch}"
-
-    # Merge to develop and switch to next snapshot version
-    local nextSnapshot=$(next_snapshot_version ${release_version})
-    log "Merging release to develop and updating version to ${nextSnapshot}"
-    switch_to_branch develop
-    validate_merged_with_remote develop
-    git merge --no-edit master
-    set_version ${nextSnapshot}
-    git commit -am "Release: Set version to ${nextSnapshot}"
-    git push origin develop
+#    # Merge to master and delete release branch (local+remote)
+#    log "Merging ${release_branch} to master"
+#    switch_to_branch master
+#    git merge --no-edit --ff-only "${release_branch}"
+#    git push origin master
+#    validate_merged_with_remote master
+#    git branch -d "${release_branch}"
+#    git push origin --delete "${release_branch}"
+#
+#    # Merge to develop and switch to next snapshot version
+#    local nextSnapshot=$(next_snapshot_version ${release_version})
+#    log "Merging release to develop and updating version to ${nextSnapshot}"
+#    switch_to_branch develop
+#    validate_merged_with_remote develop
+#    git merge --no-edit master
+#    set_version ${nextSnapshot}
+#    git commit -am "Release: Set version to ${nextSnapshot}"
+#    git push origin develop
 }
 
 #----------------------
@@ -274,22 +310,17 @@ release_and_finish_branch() {
 
 if is_pull_request; then
     log "Testing code for pull-request."
-     ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false
-elif is_release_version ${GIT_BRANCH}; then
+    build_and_test
+elif is_release_version ${GIT_BRANCH} || is_release_version ${RELEASE_TAG}; then
     log "Releasing from branch ${GIT_BRANCH}."
-    release_and_finish_branch "${GIT_BRANCH}"
+    perform_release ${GIT_BRANCH}
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
-    log "Not releasing from branch '${GIT_BRANCH}'."
-elif is_release_version ${RELEASE_TAG}; then
-    log "Creating new release from tag ${RELEASE_TAG}"
-    release_version=`echo ${RELEASE_TAG} | sed 's/^release-//'`
-    validate_version ${release_version}
-    delete_release_tag ${release_version}
-    create_release_branch ${release_version}
+    log "Not publishing from branch '${GIT_BRANCH}', running a test build."
+    build_and_test
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
-    ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
-    publish_artifacts
+    build_and_publish_artifacts
 else
-    log "Not publishing artifacts; no 'release-x.y.z' tag nor snapshot version found on branch '${GIT_BRANCH}'."
+    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
+    build_and_test
 fi
