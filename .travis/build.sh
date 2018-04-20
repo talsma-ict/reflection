@@ -4,17 +4,26 @@ set -eu -o pipefail
 
 if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
+#
+# Logging
+#
+
+SCRIPTNAME=$(basename ${0%.*})
 debug() {
-    local message=${1:-}
+    local message=${SCRIPTNAME} ${1:-}
 }
 
 log() {
-    local message=${1:-}
+    local message="[${SCRIPTNAME}] ${1:-}"
     echo "$message" 1>&2
 }
 
+warn() {
+    log "WARNING - ${1:-}"
+}
+
 fatal() {
-    log "$1"
+    log "ERROR - ${1:-}"
     exit 1
 }
 
@@ -29,7 +38,7 @@ is_semantic_version() {
 
 validate_version() {
     local version="${1:-}"
-    if ! is_semantic_version "${version}"; then fatal "[Release] Not a valid version: '${version}'!"; fi
+    if ! is_semantic_version "${version}"; then fatal "Not a valid version: '${version}'!"; fi
 }
 
 is_snapshot_version() {
@@ -53,7 +62,7 @@ next_snapshot_version() {
     read base minor suffix <<<$(echo ${original} | perl -pe 's/^(.*?)([0-9]+)([^0-9]*)$/\1 \2 \3/')
     if ! is_snapshot_version ${original}; then suffix=${suffix}-SNAPSHOT; fi
     local nextSnapshot="${base}$((minor+1))${suffix}"
-    debug "[Release] Next development version from ${original} is ${nextSnapshot}"
+    debug "Next development version from ${original} is ${nextSnapshot}"
     echo ${nextSnapshot}
 }
 
@@ -74,7 +83,7 @@ delete_release_tag() {
     # Delete the 'release-x.y.z' tag.
     local release_version="${1:-}"
     validate_version ${release_version}
-    log "[Release] Deleting tag 'release-${release_version}'."
+    log "Deleting tag 'release-${release_version}'."
     git tag --delete "release-${release_version}"
     git push --delete origin "release-${release_version}" || return 0
 }
@@ -82,7 +91,7 @@ delete_release_tag() {
 create_release_branch() {
     # Create a new 'release/x.y.z' branch, push it to 'origin'
     local release_version="${1:-}"
-    log "[Release] Pushing new 'release/${release_version}' branch."
+    log "Pushing new 'release/${release_version}' branch."
     git checkout -b release/${release_version}
     git push origin release/${release_version}
 }
@@ -105,7 +114,7 @@ find_remote_branch() {
 }
 
 switch_to_branch() {
-    log "[Release] Switching to branch ${1}"
+    log "Switching to branch ${1}"
     git checkout "${1}"
     git pull
 }
@@ -133,11 +142,10 @@ get_maven_version() {
 
 set_maven_version() {
     $(mvn_command) --batch-mode versions:set versions:commit -DnewVersion="${1}"
-    git commit -am "Release: Set project version to ${1}"
 }
 
 publish_maven_artifacts() {
-    log "[Release] Publishing project artifacts to maven central."
+    log "Publishing project artifacts to maven central."
     $(mvn_command) --batch-mode --no-snapshot-updates -Prelease deploy -DskipTests
 }
 
@@ -157,11 +165,11 @@ get_gradle_version() {
 }
 
 set_gradle_version() {
-    fatal "[Release] TODO Set project version using Gradle"
+    fatal "TODO Set project version using Gradle"
 }
 
 publish_gradle_artifacts() {
-    fatal "[Release] TODO Publish project artifacts using Gradle"
+    fatal "TODO Publish project artifacts using Gradle"
 }
 
 #
@@ -174,11 +182,10 @@ get_npm_version() {
 
 set_npm_version() {
     npm version --no-git-tag-version "${1}"
-    git commit -am "Release: Set project version to ${1}"
 }
 
 publish_npm_artifacts() {
-    fatal "[Release] TODO Publish project artifacts using NPM"
+    fatal "TODO Publish project artifacts using NPM"
 }
 
 #
@@ -189,19 +196,19 @@ get_version() {
     if [ -f pom.xml ]; then get_maven_version;
     elif [ -f build.gradle ]; then get_gradle_version;
     elif [ -f package.json ]; then get_npm_version;
-    else fatal "[Release] ERROR: No known project structure to determine version of.";
+    else fatal "ERROR: No known project structure to determine version of.";
     fi
 }
 
 set_version() {
     local project_version="${1:-}"
     validate_version ${project_version}
-    log "[Release] Setting project version to '${project_version}'."
+    log "Setting project version to '${project_version}'."
 
     if [ -f pom.xml ]; then set_maven_version "${project_version}";
     elif [ -f build.gradle ]; then set_gradle_version "${project_version}";
     elif [ -f package.json ]; then set_npm_version "${project_version}"
-    else fatal "[Release] ERROR: No known project structure to set version for.";
+    else fatal "ERROR: No known project structure to set version for.";
     fi
 }
 
@@ -209,7 +216,7 @@ publish_artifacts() {
     if [ -f pom.xml ]; then publish_maven_artifacts;
     elif [ -f build.gradle ]; then publish_gradle_artifacts;
     elif [ -f package.json ]; then publish_npm_artifacts;
-    else fatal "[Release] ERROR: No known project structure to publish artifacts for.";
+    else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
 
@@ -221,24 +228,24 @@ release_and_finish_branch() {
     local release_branch="${1:-}"
     release_version=$(echo ${release_branch} | sed 's/release[/]//')
     validate_version "${release_version}"
-    if is_snapshot_version "${release_version}"; then fatal "[Release] ERROR Bad release branch: ${release_branch}"; fi
+    if is_snapshot_version "${release_version}"; then fatal "ERROR Bad release branch: ${release_branch}"; fi
     if [[ $(get_local_branch) != ${release_branch} ]]; then
         switch_to_branch ${release_branch}
     fi
     if [[ $(get_version) != ${release_version} ]]; then
         set_version "${release_version}"
-        git commit --sign -am "Set version to ${release_version}"
+        git commit -am "Release: Set project version to ${release_version}"
     fi
 
     # Publish release and push a tag
-    publish_artifacts
+    # publish_artifacts
     local tagname="v${release_version}"
-    log "[Release] Tagging published code with '${tagname}'"
-    git tag --sign -m "Publish version ${release_version}" "${tagname}"
+    log "Tagging published code with '${tagname}'"
+    git tag -m "Publish version ${release_version}" "${tagname}"
     git push origin "${tagname}"
 
     # Merge to master and delete release branch (local+remote)
-    log "[Release] Merging ${release_branch} to master"
+    log "Merging ${release_branch} to master"
     switch_to_branch master
     git merge --no-edit --ff-only "${release_branch}"
     git push origin master
@@ -248,12 +255,12 @@ release_and_finish_branch() {
 
     # Merge to develop and switch to next snapshot version
     local nextSnapshot=$(next_snapshot_version ${release_version})
-    log "[Release] Merging release to develop and updating version to ${nextSnapshot}"
+    log "Merging release to develop and updating version to ${nextSnapshot}"
     switch_to_branch develop
     validate_merged_with_remote develop
     git merge --no-edit master
     set_version ${nextSnapshot}
-    git commit --sign -am "Set version to ${nextSnapshot}"
+    git commit -am "Release: Set version to ${nextSnapshot}"
     git push origin develop
 }
 
@@ -266,21 +273,23 @@ release_and_finish_branch() {
 [ -n "${RELEASE_TAG:-}" ] || RELEASE_TAG=$(find_release_tag)
 
 if is_pull_request; then
-    log "[Release] Not releasing from pull-request."
+    log "Testing code for pull-request."
+     ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false
 elif is_release_version ${GIT_BRANCH}; then
-    log "[Release] Releasing from branch ${GIT_BRANCH}."
+    log "Releasing from branch ${GIT_BRANCH}."
     release_and_finish_branch "${GIT_BRANCH}"
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
-    log "[Release] Not releasing from branch '${GIT_BRANCH}'."
+    log "Not releasing from branch '${GIT_BRANCH}'."
 elif is_release_version ${RELEASE_TAG}; then
-    log "[Release] Creating new release from tag ${RELEASE_TAG}"
+    log "Creating new release from tag ${RELEASE_TAG}"
     release_version=`echo ${RELEASE_TAG} | sed 's/^release-//'`
     validate_version ${release_version}
     delete_release_tag ${release_version}
     create_release_branch ${release_version}
 elif is_snapshot_version "${VERSION}"; then
-    log "[Release] Deploying snapshot from branch '${GIT_BRANCH}'."
+    log "Deploying snapshot from branch '${GIT_BRANCH}'."
+    ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
     publish_artifacts
 else
-    log "[Release] Not publishing artifacts; no 'release-x.y.z' tag nor snapshot version found on branch '${GIT_BRANCH}'."
+    log "Not publishing artifacts; no 'release-x.y.z' tag nor snapshot version found on branch '${GIT_BRANCH}'."
 fi

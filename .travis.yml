@@ -35,14 +35,7 @@ install:
   - ./mvnw --version
 
 script:
-  - ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
-  - DEBUG=true .travis/release.sh
+  - DEBUG=true .travis/build.sh
 
 after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
-
-deploy:
-  provider: script
-  script:   .travis/deploy.sh
-  skip_cleanup: true
-# TODO: Deploy releases to github
