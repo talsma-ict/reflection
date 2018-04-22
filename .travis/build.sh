@@ -88,14 +88,6 @@ delete_release_tag() {
     git push --delete origin "release-${release_version}" || return 0
 }
 
-create_release_branch() {
-    # Create a new 'release/x.y.z' branch, push it to 'origin'
-    local release_version="${1:-}"
-    log "Pushing new 'release/${release_version}' branch."
-    git checkout -b release/${release_version}
-    git push origin release/${release_version}
-}
-
 get_local_branch() {
     echo "$(git branch | grep '*' | sed 's/[* ]*//')"
 }
@@ -253,12 +245,14 @@ build_and_publish_artifacts() {
 #
 
 perform_release() {
-    local version=Unknown
     local branch="${1:-}"
     debug "Performing release from branch $branch."
+    local version=Unknown
+    local remote_release_branch=false
     if is_release_version $branch; then
         version=${branch#*/}
         validate_version "${version}"
+        remote_release_branch=true
         switch_to_branch $branch
     else
         version=${RELEASE_TAG#*-}
@@ -267,6 +261,7 @@ perform_release() {
         branch="release/${version}"
         create_branch $branch
     fi
+    log "Releasing verion ${version} from branch $branch."
 
     if [[ $(get_version) != ${version} ]]; then
         set_version "${version}"
@@ -297,7 +292,7 @@ perform_release() {
 #    git push origin "${tagname}"
 #    git push origin master
 #    git push origin develop
-#    git push origin --delete "${release_branch}"
+#    if [ remote_release_branch ]; then git push origin --delete "${release_branch}"; fi
 }
 
 #----------------------
@@ -321,6 +316,7 @@ elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
     build_and_publish_artifacts
 else
-    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
-    build_and_test
+#    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
+#    build_and_test
+    log "Skipping build for branch '${GIT_BRANCH}'."
 fi
