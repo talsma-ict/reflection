@@ -275,10 +275,10 @@ perform_release() {
     git tag -m "Publish version ${version}" "${tagname}"
 
     # Merge to master and delete release branch (local+remote)
-    log "Merging ${release_branch} to master"
+    log "Merging ${branch} to master"
     switch_to_branch master
-    git merge --no-edit --ff-only "${release_branch}"
-    git branch -d "${release_branch}"
+    git merge --no-edit --ff-only "${branch}"
+    git branch -d "${branch}"
 
     # Merge to develop and switch to next snapshot version
     local nextSnapshot=$(next_snapshot_version ${version})
