@@ -312,7 +312,7 @@ elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     build_and_test
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
-    switch_to_branch "${GIT_BRANCH}"
+    ./mvnw -X license:check
     build_and_publish_artifacts
 else
 #    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
