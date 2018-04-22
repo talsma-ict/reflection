@@ -309,6 +309,7 @@ elif is_release_version ${GIT_BRANCH} || is_release_version ${RELEASE_TAG}; then
     perform_release ${GIT_BRANCH}
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     log "Not publishing from branch '${GIT_BRANCH}', running a test build."
+    switch_to_branch "${GIT_BRANCH}"
     build_and_test
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
