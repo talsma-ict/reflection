@@ -248,11 +248,9 @@ perform_release() {
     local branch="${1:-}"
     debug "Performing release from branch $branch."
     local version=Unknown
-    local remote_release_branch=false
     if is_release_version $branch; then
         version=${branch#*/}
         validate_version "${version}"
-        remote_release_branch=true
         switch_to_branch $branch
     else
         version=${RELEASE_TAG#*-}
@@ -289,10 +287,10 @@ perform_release() {
     git commit -am "Release: Set version to ${nextSnapshot}"
 
     # Pushing local changes to remote
-#    git push origin "${tagname}"
-#    git push origin master
-#    git push origin develop
-#    if [ remote_release_branch ]; then git push origin --delete "${release_branch}"; fi
+    git push origin "${tagname}"
+    git push origin master
+    git push origin develop
+    if is_release_version ${GIT_BRANCH}; then git push origin --delete "${release_branch}"; fi
 }
 
 #----------------------
