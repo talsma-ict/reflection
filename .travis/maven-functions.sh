@@ -1,5 +1,4 @@
 #!/bin/bash
-set -eu -o pipefail
 
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 

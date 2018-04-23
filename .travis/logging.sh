@@ -1,5 +1,4 @@
 #!/bin/bash
-set -eu -o pipefail
 
 #
 # Script containing (very) basic logging and debugging features
