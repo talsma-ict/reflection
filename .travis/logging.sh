@@ -7,20 +7,21 @@ if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 #
 
 SCRIPTNAME=$(basename ${0%.*})
-debug() {
-    local message="[${SCRIPTNAME}] ${1:-}"
-}
 
 log() {
-    local message="[${SCRIPTNAME}] ${1:-}"
-    echo "$message" 1>&2
+    local message="${2:-INFO} ${SCRIPTNAME}: ${1:-}"
+    [ "${2:-}" = "DEBUG" ] || echo "${message}" 1>&2
+}
+
+debug() {
+    log "${1:-}" "${2:-DEBUG}"
 }
 
 warn() {
-    log "WARNING - ${1:-}"
+    log "${1:-}" "${2:-WARNING}"
 }
 
 fatal() {
-    log "ERROR - ${1:-}"
+    log "${1:-}" "${2:-ERROR}"
     exit 1
 }

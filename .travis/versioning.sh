@@ -2,7 +2,7 @@
 set -eu -o pipefail
 if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
-source "$(dirname $0)/logging.sh"
+declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 
 #
 # Script containing pre-defined functions regarding versioning.
@@ -14,6 +14,7 @@ source "$(dirname $0)/logging.sh"
 #
 # params:   1: The version to test
 # result:   whether the first argument was a valid semantic version.
+
 is_semantic_version() {
     [[ ${1:-} =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\.]+)*(\+[A-Za-z0-9\.\-]+)?$ ]]
 }

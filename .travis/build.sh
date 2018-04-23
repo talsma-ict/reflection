@@ -2,56 +2,10 @@
 set -eu -o pipefail
 if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
-source "$(dirname $0)/logging.sh"
-source "$(dirname $0)/versioning.sh"
-
-
-#
-# Git
-#
-
-is_pull_request() {
-    git ls-remote origin | grep $(git rev-parse HEAD) | grep "refs/pull/"
-    return $?
-}
-
-find_release_tag() {
-    echo $(git tag -l --points-at HEAD | grep '^release-')
-}
-
-get_local_branch() {
-    echo "$(git branch | grep '*' | sed 's/[* ]*//')"
-}
-
-find_remote_branches() {
-    echo $(git ls-remote --heads origin | grep `git rev-parse HEAD` | sed "s/.*refs\/heads\///g")
-}
-
-find_remote_branch() {
-    local local_branch="$(get_local_branch)"
-    local remote_branches=$(find_remote_branches)
-    if [[ -n "${local_branch:-}" && "${remote_branches}" = *"${local_branch}" ]]; then echo ${local_branch};
-    elif [[ -n "${TRAVIS_BRANCH:-}" && "${remote_branches}" = *"${TRAVIS_BRANCH}" ]]; then echo ${TRAVIS_BRANCH};
-    else echo ${remote_branches} | awk '{print $1}';
-    fi
-}
-
-switch_to_branch() {
-    log "Switching to branch ${1}"
-    git checkout "${1}"
-    git pull
-}
-
-create_branch() {
-    log "Creating and switching to branch ${1}"
-    git checkout -b "${1}"
-}
-
-validate_merged_with_remote_branch() {
-    if ! git branch -a --merged | grep "remotes/.*/${1}" > /dev/null; then
-        fatal "FATAL - Git is not up-to-date with remote branch ${1}, please merge first before proceeding."
-    fi
-}
+# Import functions if not already imported
+declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
+declare -f is_semantic_version > /dev/null || source "$(dirname $0)/versioning.sh"
+declare -f is_pull_request > /dev/null || source "$(dirname $0)/git-functions.sh"
 
 #
 # Maven
@@ -179,20 +133,20 @@ perform_release() {
     local branch="${1:-}"
     debug "Performing release from branch $branch."
     local version=Unknown
-    if is_release_version $branch; then
+    if is_release_version ${branch}; then
         version=${branch#*/}
         validate_version "${version}"
-        switch_to_branch $branch
+        switch_to_branch ${branch}
     else
         version=${RELEASE_TAG#*-}
         validate_version "${version}"
         if is_snapshot_version "${version}"; then fatal "ERROR Bad release version: ${version}"; fi
         branch="release/${version}"
-        create_branch $branch
+        create_branch ${branch}
         git tag --delete "release-${version}"
         git push --delete origin "release-${version}"
     fi
-    log "Releasing verion ${version} from branch $branch."
+    log "Releasing verion ${version} from branch ${branch}."
 
     if [[ $(get_version) != ${version} ]]; then
         set_version "${version}"
@@ -223,7 +177,7 @@ perform_release() {
     git push origin "${tagname}"
     git push origin master
     git push origin develop
-    if is_release_version ${GIT_BRANCH}; then git push origin --delete "${release_branch}"; fi
+    if is_release_version ${GIT_BRANCH}; then git push origin --delete "${branch}"; fi
 }
 
 #----------------------
