@@ -313,8 +313,9 @@ elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     build_and_test
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
-    switch_to_branch "${GIT_BRANCH}"
+#    switch_to_branch "${GIT_BRANCH}"
     git status
+    git log -n 1 src/main/java/nl/talsmasoftware/reflection/Classes.java
     ./mvnw -X license:check
 #    build_and_publish_artifacts
 else
