@@ -86,7 +86,7 @@ perform_release() {
     git branch -d "${branch}"
 
     # Merge to develop and switch to next snapshot version
-    local nextSnapshot=$(next_snapshot_version ${version})
+    local nextSnapshot="$(next_snapshot_version ${version})"
     log "Merging to develop and updating version to ${nextSnapshot}"
     switch_to_branch develop || create_branch develop
     git merge --no-edit master
@@ -97,7 +97,7 @@ perform_release() {
     git push origin "${tagname}"
     git push origin master
     git push origin develop
-    if is_release_version ${GIT_BRANCH}; then git push origin --delete "${branch}"; fi
+    git push origin --delete "${branch}"
 }
 
 #----------------------
