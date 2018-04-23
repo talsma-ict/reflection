@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Talsma ICT
+ * Copyright 2016-2018 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,8 +124,7 @@ public final class Classes {
     public static <T> T createNew(Class<T> type, Object... constructorParameters) {
         try {
 
-            @SuppressWarnings("unchecked")
-            final Constructor<T> constructor = Constructors.getConstructor(type, typesOf(constructorParameters));
+            @SuppressWarnings("unchecked") final Constructor<T> constructor = Constructors.getConstructor(type, typesOf(constructorParameters));
             return constructor.newInstance(constructorParameters);
 
         } catch (InvocationTargetException ite) {

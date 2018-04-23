@@ -79,15 +79,6 @@ find_release_tag() {
     echo $(git tag -l --points-at HEAD | grep '^release-')
 }
 
-delete_release_tag() {
-    # Delete the 'release-x.y.z' tag.
-    local release_version="${1:-}"
-    validate_version ${release_version}
-    log "Deleting tag 'release-${release_version}'."
-    git tag --delete "release-${release_version}"
-    git push --delete origin "release-${release_version}" || return 0
-}
-
 get_local_branch() {
     echo "$(git branch | grep '*' | sed 's/[* ]*//')"
 }
@@ -258,7 +249,8 @@ perform_release() {
         if is_snapshot_version "${version}"; then fatal "ERROR Bad release version: ${version}"; fi
         branch="release/${version}"
         create_branch $branch
-        delete_release_tag ${version}
+        git tag --delete "release-${version}"
+        git push --delete origin "release-${version}"
     fi
     log "Releasing verion ${version} from branch $branch."
 
@@ -314,10 +306,10 @@ elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
 #    switch_to_branch "${GIT_BRANCH}"
-    git status
-    git log -n 1 src/main/java/nl/talsmasoftware/reflection/Classes.java
-    ./mvnw -X license:check
-#    build_and_publish_artifacts
+#    git status
+#    git log -n 1 src/main/java/nl/talsmasoftware/reflection/Classes.java
+#    ./mvnw -X license:check
+    build_and_publish_artifacts
 else
 #    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
 #    build_and_test
