@@ -71,9 +71,11 @@ perform_release() {
         log "Updating version from ${current_version} to ${version}."
         set_version "${version}"
         git commit -s -am "Release: Set project version to ${version}"
+    else
+        log "No need to update project version. It is already set to '${version}'."
     fi
 
-    build_and_publish_artifacts
+#    build_and_publish_artifacts
 
     local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
@@ -82,6 +84,7 @@ perform_release() {
     # Merge to master and delete release branch (local+remote)
     log "Merging ${branch} to master"
     switch_to_branch master || create_branch master
+    [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch"
     git merge --no-edit --ff-only "${branch}"
     git branch -d "${branch}" || warn "Could not delete local release branch '${branch}'."
 
@@ -89,6 +92,7 @@ perform_release() {
     local nextSnapshot="$(next_snapshot_version ${version})"
     log "Merging to develop and updating version to ${nextSnapshot}"
     switch_to_branch develop || create_branch develop
+    [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch"
     git merge --no-edit master
     set_version ${nextSnapshot}
     git commit -s -am "Release: Set version to ${nextSnapshot}"

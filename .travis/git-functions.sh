@@ -34,12 +34,11 @@ find_remote_branch() {
 
 switch_to_branch() {
     log "Switching to branch ${1}"
-    git checkout "${1}"
-    git pull
+    git checkout "${1}" && git pull
 }
 
 create_branch() {
-    log "Creating and switching to branch ${1}"
+    log "Creating and switching to new local branch ${1}"
     git checkout -b "${1}"
 }
 
