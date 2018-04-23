@@ -86,14 +86,14 @@ perform_release() {
 
     # Merge to master and delete release branch (local+remote)
     log "Merging ${branch} to master"
-    switch_to_branch master
+    switch_to_branch master || create_branch master
     git merge --no-edit --ff-only "${branch}"
     git branch -d "${branch}"
 
     # Merge to develop and switch to next snapshot version
     local nextSnapshot=$(next_snapshot_version ${version})
     log "Merging to develop and updating version to ${nextSnapshot}"
-    switch_to_branch develop
+    switch_to_branch develop || create_branch develop
     git merge --no-edit master
     set_version ${nextSnapshot}
     git commit -am "Release: Set version to ${nextSnapshot}"
