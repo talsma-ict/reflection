@@ -56,26 +56,21 @@ build_and_publish_artifacts() {
 
 perform_release() {
     local branch="${1:-}"
-    debug "Performing release from branch $branch."
-    local version=Unknown
+    debug "Performing release from branch ${branch}."
+    local version="Unknown"
     if is_release_version ${branch}; then
         version=${branch#*/}
-        validate_version "${version}"
-        switch_to_branch ${branch}
-    else
-        version=${RELEASE_TAG#*-}
-        validate_version "${version}"
-        if is_snapshot_version "${version}"; then fatal "ERROR Bad release version: ${version}"; fi
-        branch="release/${version}"
-        create_branch ${branch}
-        git tag --delete "release-${version}"
-        git push --delete origin "release-${version}"
+        debug "Detected version '${version}'."
     fi
+    validate_version "${version}"
+    switch_to_branch "${branch}" || create_branch "${branch}"
     log "Releasing verion ${version} from branch ${branch}."
 
-    if [[ $(get_version) != ${version} ]]; then
+    local current_version="$(get_version)"
+    if [[ "${current_version}" != "${version}" ]]; then
+        log "Updating version from ${current_version} to ${version}."
         set_version "${version}"
-        git commit -am "Release: Set project version to ${version}"
+        git commit -s -am "Release: Set project version to ${version}"
     fi
 
     build_and_publish_artifacts
@@ -96,7 +91,7 @@ perform_release() {
     switch_to_branch develop || create_branch develop
     git merge --no-edit master
     set_version ${nextSnapshot}
-    git commit -am "Release: Set version to ${nextSnapshot}"
+    git commit -s -am "Release: Set version to ${nextSnapshot}"
 
     # Pushing local changes to remote
     git push origin "${tagname}"
@@ -111,12 +106,11 @@ perform_release() {
 
 [ -n "${VERSION:-}" ] || VERSION=$(get_version)
 [ -n "${GIT_BRANCH:-}" ] || GIT_BRANCH=$(find_remote_branch)
-RELEASE_TAG=$(find_release_tag)
 
 if is_pull_request; then
     log "Testing code for pull-request."
     build_and_test
-elif is_release_version "${GIT_BRANCH}" || is_release_version "${RELEASE_TAG}"; then
+elif is_release_version "${GIT_BRANCH}"; then
     log "Releasing from branch ${GIT_BRANCH}."
     perform_release ${GIT_BRANCH}
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
