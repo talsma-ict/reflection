@@ -126,7 +126,6 @@ elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
     build_and_publish_artifacts
 else
-#    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
-#    build_and_test
-    log "Skipping build for branch '${GIT_BRANCH}'."
+    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
+    build_and_test
 fi
