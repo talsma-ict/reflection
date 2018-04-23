@@ -111,12 +111,12 @@ perform_release() {
 
 [ -n "${VERSION:-}" ] || VERSION=$(get_version)
 [ -n "${GIT_BRANCH:-}" ] || GIT_BRANCH=$(find_remote_branch)
-#[ -n "${RELEASE_TAG:-}" ] || RELEASE_TAG=$(find_release_tag)
+RELEASE_TAG=$(find_release_tag)
 
 if is_pull_request; then
     log "Testing code for pull-request."
     build_and_test
-elif is_release_version ${GIT_BRANCH} || is_release_version $(find_release_tag); then
+elif is_release_version "${GIT_BRANCH}" || is_release_version "${RELEASE_TAG}"; then
     log "Releasing from branch ${GIT_BRANCH}."
     perform_release ${GIT_BRANCH}
 elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
