@@ -1,6 +1,5 @@
 #!/bin/bash
 set -eu -o pipefail
-if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
 #
 # Script containing (very) basic logging and debugging features

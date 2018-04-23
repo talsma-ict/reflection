@@ -1,6 +1,5 @@
 #!/bin/bash
 set -eu -o pipefail
-if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
 
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 

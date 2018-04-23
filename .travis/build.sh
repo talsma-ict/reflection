@@ -1,98 +1,23 @@
 #!/bin/bash
 set -eu -o pipefail
-if [[ "${DEBUG:-false}" =~ ^yes|true$ ]]; then set -x; fi
+[[ "${DEBUG:-false}" =~ ^yes|true$ ]] && set -x
 
 # Import functions if not already imported
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 declare -f is_semantic_version > /dev/null || source "$(dirname $0)/versioning.sh"
 declare -f is_pull_request > /dev/null || source "$(dirname $0)/git-functions.sh"
-
-#
-# Maven
-#
-
-mvn_command() {
-    if [ ! -f pom.xml ]; then fatal "No maven POM file found!";
-    elif [ -x ./mvnw ]; then echo "./mvnw";
-    else echo "mvn";
-    fi
-}
-
-get_maven_version() {
-    echo $(printf 'VERSION=${project.version}\n0\n' | $(mvn_command) help:evaluate | grep '^VERSION=' | sed 's/VERSION=//')
-}
-
-set_maven_version() {
-    $(mvn_command) --batch-mode versions:set versions:commit -DnewVersion="${1}"
-}
-
-build_and_test_maven() {
-    log "Building and Testing project."
-    $(mvn_command) --batch-mode clean verify -Dmaven.test.failure.ignore=false
-}
-
-build_and_publish_maven_artifacts() {
-    log "Building and Testing project."
-    $(mvn_command) --batch-mode clean verify -Dmaven.test.failure.ignore=false -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
-    log "Publishing project artifacts to maven central."
-    $(mvn_command) --batch-mode --no-snapshot-updates -Prelease deploy -DskipTests
-}
-
-#
-# Gradle
-#
-
-gradle_command() {
-    if [ ! -f build.gradle ]; then fatal "No gradle build file found!";
-    elif [ -x ./gradlew ]; then echo "./gradlew";
-    else echo "gradle";
-    fi
-}
-
-get_gradle_version() {
-    echo $($(gradle_command) properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]')
-}
-
-set_gradle_version() {
-    fatal "TODO Set project version using Gradle"
-}
-
-build_and_test_gradle() {
-    fatal "TODO Build and test project using Gradle"
-}
-
-build_and_publish_gradle_artifacts() {
-    fatal "TODO Publish project artifacts using Gradle"
-}
-
-#
-# NPM
-#
-
-get_npm_version() {
-    echo $(npm version | head -1 | sed 's/.*'"'"'\(.*\)'"'"'.*/\1/g')
-}
-
-set_npm_version() {
-    npm version --no-git-tag-version "${1}"
-}
-
-build_and_test_npm() {
-    fatal "TODO Build and test project using NPM"
-}
-
-build_and_publish_npm_artifacts() {
-    fatal "TODO Publish project artifacts using NPM"
-}
+declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions.sh"
+#declare -f is_gradle_project > /dev/null || source "$(dirname $0)/gradle-functions.sh"
+#declare -f is_npm_project > /dev/null || source "$(dirname $0)/npm-functions.sh"
 
 #
 # Delegation
 #
 
 get_version() {
-    if [ -f pom.xml ]; then get_maven_version;
-    elif [ -f build.gradle ]; then get_gradle_version;
-    elif [ -f package.json ]; then get_npm_version;
+    if is_maven_project; then get_maven_version;
+#    elif is_gradle_project; then get_gradle_version;
+#    elif [ -f package.json ]; then get_npm_version;
     else fatal "ERROR: No known project structure to determine version of.";
     fi
 }
@@ -102,25 +27,25 @@ set_version() {
     validate_version ${project_version}
     log "Setting project version to '${project_version}'."
 
-    if [ -f pom.xml ]; then set_maven_version "${project_version}";
-    elif [ -f build.gradle ]; then set_gradle_version "${project_version}";
-    elif [ -f package.json ]; then set_npm_version "${project_version}"
+    if is_maven_project; then set_maven_version "${project_version}";
+#    elif is_gradle_project; then set_gradle_version "${project_version}";
+#    elif [ -f package.json ]; then set_npm_version "${project_version}"
     else fatal "ERROR: No known project structure to set version for.";
     fi
 }
 
 build_and_test() {
-    if [ -f pom.xml ]; then build_and_test_maven;
-    elif [ -f build.gradle ]; then build_and_test_gradle;
-    elif [ -f package.json ]; then build_and_test_npm;
+    if is_maven_project; then build_and_test_maven;
+#    elif is_gradle_project; then build_and_test_gradle;
+#    elif [ -f package.json ]; then build_and_test_npm;
     else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
 
 build_and_publish_artifacts() {
-    if [ -f pom.xml ]; then build_and_publish_maven_artifacts;
-    elif [ -f build.gradle ]; then build_and_publish_gradle_artifacts;
-    elif [ -f package.json ]; then build_and_publish_npm_artifacts;
+    if is_maven_project; then build_and_publish_maven_artifacts;
+#    elif is_gradle_project; then build_and_publish_gradle_artifacts;
+#    elif is_npm_project; then build_and_publish_npm_artifacts;
     else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
