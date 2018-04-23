@@ -258,6 +258,7 @@ perform_release() {
         if is_snapshot_version "${version}"; then fatal "ERROR Bad release version: ${version}"; fi
         branch="release/${version}"
         create_branch $branch
+        delete_release_tag ${version}
     fi
     log "Releasing verion ${version} from branch $branch."
 
@@ -312,9 +313,10 @@ elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
     build_and_test
 elif is_snapshot_version "${VERSION}"; then
     log "Deploying snapshot from branch '${GIT_BRANCH}'."
+    switch_to_branch "${GIT_BRANCH}"
     git status
     ./mvnw -X license:check
-    build_and_publish_artifacts
+#    build_and_publish_artifacts
 else
 #    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
 #    build_and_test
