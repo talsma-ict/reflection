@@ -92,7 +92,7 @@ perform_release() {
     local nextSnapshot="$(next_snapshot_version ${version})"
     log "Merging to develop and updating version to ${nextSnapshot}"
     switch_to_branch develop || create_branch develop
-    [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch"
+    [[ "$(get_local_branch)" = "develop" ]] || fatal "Could not switch to develop branch"
     git merge --no-edit master
     set_version ${nextSnapshot}
     git commit -s -am "Release: Set version to ${nextSnapshot}"
