@@ -78,7 +78,7 @@ perform_release() {
         git commit -am "Release: Set project version to ${version}"
     fi
 
-    # build_and_publish_artifacts
+    build_and_publish_artifacts
 
     local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
