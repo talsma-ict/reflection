@@ -83,7 +83,7 @@ perform_release() {
     log "Merging ${branch} to master"
     switch_to_branch master || create_branch master
     git merge --no-edit --ff-only "${branch}"
-    git branch -d "${branch}" || warning "Could not delete local release branch '${branch}'."
+    git branch -d "${branch}" || warn "Could not delete local release branch '${branch}'."
 
     # Merge to develop and switch to next snapshot version
     local nextSnapshot="$(next_snapshot_version ${version})"
