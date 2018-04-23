@@ -38,4 +38,4 @@ script:
   - DEBUG=true .travis/build.sh
 
 after_success:
-  - [ -f target/jacoco.exec ] && ./mvnw jacoco:report coveralls:report
+  - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
