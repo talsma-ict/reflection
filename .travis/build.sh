@@ -75,7 +75,8 @@ perform_release() {
         log "No need to update project version. It is already set to '${version}'."
     fi
 
-#    build_and_publish_artifacts
+    log "Building and publishing the artifacts for version ${version}."
+    build_and_publish_artifacts
 
     local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
