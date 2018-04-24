@@ -78,7 +78,7 @@ perform_release() {
     log "Building and publishing the artifacts for version ${version}."
     build_and_publish_artifacts
 
-    local tagname="${version}"
+    local tagname="v${version}"
     log "Tagging published code with '${tagname}'"
     git tag -m "Publish version ${version}" "${tagname}"
 
