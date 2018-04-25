@@ -13,10 +13,6 @@ cache:
   directories:
     - $HOME/.m2/repository
 
-branches:
-  except:
-    - /^[0-9]/
-
 before_install:
   # copy maven settings
   - cp .travis/mvn-settings.xml $HOME/.m2/settings.xml
