@@ -37,12 +37,12 @@ after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
 
 deploy:
-  - provider: releases
-    api_key: $GH_TOKEN
-    file_glob: true
-    file:
-      - target/*.jar
-      - target/*.asc
-    skip_cleanup: true
-    on:
-      - tags: true
+  provider: releases
+  api_key: $GH_TOKEN
+  file_glob: true
+  file:
+    - target/*.jar
+    - target/*.asc
+  skip_cleanup: true
+  on:
+    - tags: true
