@@ -44,4 +44,5 @@ deploy:
     - target/*.jar
     - target/*.asc
   skip_cleanup: true
-  on.tags: true
+  on:
+    tags: true
