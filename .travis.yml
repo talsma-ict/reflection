@@ -40,7 +40,7 @@ deploy:
   - provider: releases
     api_key: $GH_TOKEN
     file_glob: true
-    file: **/target/*.jar
+    file: **target/*.jar
     skip_cleanup: true
     on:
       - tags: true
