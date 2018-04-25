@@ -111,19 +111,19 @@ if is_pull_request; then
     log "Testing code for pull-request."
     build_and_test
 elif is_release_version "${GIT_BRANCH}"; then
-    log "Creating a new release from branch ${GIT_BRANCH}."
+    log "Creating a new release from branch '${GIT_BRANCH}'."
     build_and_test
     create_release "${GIT_BRANCH}"
 elif is_snapshot_version "${VERSION}" && [[ "${GIT_BRANCH}" = "develop" ]]; then
-    log "Publishing ${VERSION} from branch ${GIT_BRANCH}."
+    log "Publishing '${VERSION}' from branch '${GIT_BRANCH}'."
     build_and_publish_artifacts
 elif [[ "${GIT_BRANCH}" = "master" ]]; then
     if ! is_snapshot_version "${VERSION}" && git tag -l --points-at HEAD | grep "${VERSION}" >/dev/null ; then
-        log "Publishing ${VERSION} from branch ${GIT_BRANCH}."
+        log "Publishing '${VERSION}' from branch '${GIT_BRANCH}'."
         validate_version "${VERSION}"
         build_and_publish_artifacts
     else
-        log "No release tag found on branch ${GIT_BRANCH} for version ${VERSION}, running a test build."
+        log "No release tag found on branch '${GIT_BRANCH}' for version '${VERSION}', running a test build."
         build_and_test
     fi
 else
