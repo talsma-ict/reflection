@@ -44,10 +44,3 @@ deploy:
     skip_cleanup: true
     on:
       - tags: true
-  - provider: releases
-    api_key: $GH_TOKEN
-    file_glob: true
-    file: **/target/*.asc
-    skip_cleanup: true
-    on:
-      - tags: true
