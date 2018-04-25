@@ -54,51 +54,46 @@ build_and_publish_artifacts() {
 # Release proces
 #
 
-perform_release() {
+create_release() {
     local branch="${1:-}"
     debug "Performing release from branch ${branch}."
-    local version="Unknown"
-    if is_release_version ${branch}; then
-        version=${branch#*/}
-        debug "Detected version '${version}'."
-    fi
-    validate_version "${version}"
+    is_release_version "${branch}" || fatal "Branch is not a valid release branch: '${branch}'."
+    local release_version="${branch#*/}"
+    debug "Detected version '${release_version}'."
+    validate_version "${release_version}"
     switch_to_branch "${branch}" || create_branch "${branch}"
-    log "Releasing verion ${version} from branch ${branch}."
+    log "Releasing verion ${release_version} from branch ${branch}."
 
     local current_version="$(get_version)"
-    if [[ "${current_version}" != "${version}" ]]; then
-        log "Updating version from ${current_version} to ${version}."
-        set_version "${version}"
-        git commit -s -am "Release: Set project version to ${version}"
+    if [[ "${current_version}" != "${release_version}" ]]; then
+        log "Updating version from ${current_version} to ${release_version}."
+        set_version "${release_version}"
+        git commit -s -am "Release: Set project version to ${release_version}"
     else
-        log "No need to update project version. It is already set to '${version}'."
+        log "No need to update project version. It is already '${release_version}'."
     fi
 
-    log "Building and publishing the artifacts for version ${version}."
-    build_and_publish_artifacts
+    local tagname="v${release_version}"
+    log "Tagging published code with '${tagname}'."
+    git tag -m "Publish version ${release_version}" "${tagname}"
 
-    local tagname="v${version}"
-    log "Tagging published code with '${tagname}'"
-    git tag -m "Publish version ${version}" "${tagname}"
-
-    # Merge to master and delete release branch (local+remote)
+    # Merge to master and delete local release branch
     log "Merging ${branch} to master"
     switch_to_branch master || create_branch master
-    [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch"
+    [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch."
     git merge --no-edit --ff-only "${branch}"
     git branch -d "${branch}" || warn "Could not delete local release branch '${branch}'."
 
-    # Merge to develop and switch to next snapshot version
-    local nextSnapshot="$(next_snapshot_version ${version})"
-    log "Merging to develop and updating version to ${nextSnapshot}"
+    # Merge to develop and switch to next snapshot
+    local nextSnapshot="$(next_snapshot_version ${release_version})"
+    log "Merging to develop and updating version to '${nextSnapshot}'."
     switch_to_branch develop || create_branch develop
-    [[ "$(get_local_branch)" = "develop" ]] || fatal "Could not switch to develop branch"
+    [[ "$(get_local_branch)" = "develop" ]] || fatal "Could not switch to develop branch."
     git merge --no-edit master
     set_version ${nextSnapshot}
-    git commit -s -am "Release: Set version to ${nextSnapshot}"
+    git commit -s -am "Release: Set next development version to ${nextSnapshot}"
 
-    # Pushing local changes to remote
+    log "Pushing release to origin and deleting branch '${branch}'."
     git push origin "${tagname}"
     git push origin master
     git push origin develop
@@ -116,15 +111,22 @@ if is_pull_request; then
     log "Testing code for pull-request."
     build_and_test
 elif is_release_version "${GIT_BRANCH}"; then
-    log "Releasing from branch ${GIT_BRANCH}."
-    perform_release ${GIT_BRANCH}
-elif [[ ! "${GIT_BRANCH}" = "develop" && ! "${GIT_BRANCH}" = "master" ]]; then
-    log "Not publishing from branch '${GIT_BRANCH}', running a test build."
+    log "Creating a new release from branch ${GIT_BRANCH}."
     build_and_test
-elif is_snapshot_version "${VERSION}"; then
-    log "Deploying snapshot from branch '${GIT_BRANCH}'."
+    create_release "${GIT_BRANCH}"
+elif is_snapshot_version "${VERSION}" && [[ "${GIT_BRANCH}" = "develop" ]]; then
+    log "Publishing ${VERSION} from branch ${GIT_BRANCH}."
     build_and_publish_artifacts
+elif [[ "${GIT_BRANCH}" = "master" ]]; then
+    if ! is_snapshot_version "${VERSION}" && git tag -l --points-at HEAD | grep "${VERSION}" >/dev/null ; then
+        log "Publishing ${VERSION} from branch ${GIT_BRANCH}."
+        validate_version "${VERSION}"
+        build_and_publish_artifacts
+    else
+        log "No release tag found on branch ${GIT_BRANCH} for version ${VERSION}, running a test build."
+        build_and_test
+    fi
 else
-    log "Not publishing artifacts; no snapshot version found on branch '${GIT_BRANCH}'."
+    log "Not publishing '${VERSION}' from branch '${GIT_BRANCH}', running a test build."
     build_and_test
 fi

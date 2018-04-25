@@ -7,7 +7,7 @@
 SCRIPTNAME=$(basename ${0%.*})
 
 log() {
-    local message="${2:-INFO} ${SCRIPTNAME}: ${1:-}"
+    local message="[${2:-INFO}] [${SCRIPTNAME}] ${1:-}"
     [ "${2:-}" = "DEBUG" ] || echo "${message}" 1>&2
 }
 
