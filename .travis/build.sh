@@ -73,7 +73,7 @@ create_release() {
         log "No need to update project version. It is already '${release_version}'."
     fi
 
-    local tagname="v${release_version}"
+    local tagname="${release_version}"
     log "Tagging published code with '${tagname}'."
     git tag -m "Publish version ${release_version}" "${tagname}"
 
