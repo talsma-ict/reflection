@@ -62,7 +62,7 @@ create_release() {
     debug "Detected version '${release_version}'."
     validate_version "${release_version}"
     switch_to_branch "${branch}" || create_branch "${branch}"
-    log "Releasing verion ${release_version} from branch ${branch}."
+    log "Releasing version ${release_version} from branch ${branch}."
 
     local current_version="$(get_version)"
     if [[ "${current_version}" != "${release_version}" ]]; then
@@ -118,7 +118,10 @@ elif is_snapshot_version "${VERSION}" && [[ "${GIT_BRANCH}" = "develop" ]]; then
     log "Publishing '${VERSION}' from branch '${GIT_BRANCH}'."
     build_and_publish_artifacts
 elif [[ "${GIT_BRANCH}" = "master" ]]; then
-    if ! is_snapshot_version "${VERSION}" && git tag -l --points-at HEAD | grep "${VERSION}" >/dev/null ; then
+    if [[ "${TRAVIS_BRANCH:-}" != "${TRAVIS_TAG:-}" ]]; then
+        log "Travis: Running a test build on '${TRAVIS_BRANCH:-}' to avoid multiple release deployments."
+        build_and_test
+    elif ! is_snapshot_version "${VERSION}" && git tag -l --points-at HEAD | grep "${VERSION}" >/dev/null ; then
         log "Publishing '${VERSION}' from branch '${GIT_BRANCH}'."
         validate_version "${VERSION}"
         build_and_publish_artifacts
