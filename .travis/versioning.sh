@@ -54,7 +54,7 @@ set_file_version() {
 
 # Returns the current version for the project
 get_version() {
-    if false && is_maven_project; then get_maven_version;
+    if is_maven_project; then get_maven_version;
 #    elif is_gradle_project; then get_gradle_version;
 #    elif [ -f package.json ]; then get_npm_version;
     elif [ -f VERSION.txt ]; then get_file_version;
