@@ -81,7 +81,7 @@ module com.example.myapp {
 
 ## License
 
-[Apache 2.0 license](LICENSE)
+[Apache 2.0 license](../LICENSE)
 
 
   [ci-img]: https://img.shields.io/travis/talsma-ict/reflection/develop.svg
