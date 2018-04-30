@@ -32,7 +32,9 @@ create_release() {
     # Merge to master and delete local release branch
     log "Merging ${branch} to master"
     git remote -v
+    git branch -v -r
     git fetch -v origin
+    git fetch -v origin '+refs/heads/*:refs/heads/*'
     git branch -v --list --all
     switch_to_branch master || create_branch master
     [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch."
