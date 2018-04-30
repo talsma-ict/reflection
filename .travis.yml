@@ -32,7 +32,7 @@ install:
 
 script:
   - .travis/build.sh
-  - DEBUG=true .travis/release.sh
+  - .travis/release.sh
 
 after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi
