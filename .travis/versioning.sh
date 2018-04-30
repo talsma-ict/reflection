@@ -14,10 +14,12 @@ is_semantic_version() {
     [[ ${1:-} =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\.]+)*(\+[A-Za-z0-9\.\-]+)?$ ]]
 }
 
+# Shorthand to validate the first argument with: is_semantic_version || fatal
 validate_version() {
     is_semantic_version "${1:-}" || fatal "Not a valid version: '${1:-}'!"
 }
 
+# Test whether the first argument is a SNAPSHOT version or not
 is_snapshot_version() {
     validate_version "${1:-}"
     [[ "${1:-}" =~ ^.*-SNAPSHOT$ ]]
@@ -42,14 +44,25 @@ next_snapshot_version() {
     echo ${nextSnapshot}
 }
 
+get_file_version() {
+    echo $(cat VERSION.txt)
+}
+
+set_file_version() {
+    echo "${1:-UNKNOWN}">VERSION.txt
+}
+
+# Returns the current version for the project
 get_version() {
-    if is_maven_project; then get_maven_version;
+    if false && is_maven_project; then get_maven_version;
 #    elif is_gradle_project; then get_gradle_version;
 #    elif [ -f package.json ]; then get_npm_version;
+    elif [ -f VERSION.txt ]; then get_file_version;
     else fatal "ERROR: No known project structure to determine version of.";
     fi
 }
 
+# Sets the current version for the project
 set_version() {
     local project_version="${1:-}"
     validate_version ${project_version}
@@ -57,7 +70,8 @@ set_version() {
 
     if is_maven_project; then set_maven_version "${project_version}";
 #    elif is_gradle_project; then set_gradle_version "${project_version}";
-#    elif [ -f package.json ]; then set_npm_version "${project_version}"
+#    elif [ -f package.json ]; then set_npm_version "${project_version}";
+    elif [ -f VERSION.txt ]; then set_file_version "${project_version}";
     else fatal "ERROR: No known project structure to set version for.";
     fi
 }
