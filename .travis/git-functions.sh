@@ -34,7 +34,7 @@ find_remote_branch() {
 
 switch_to_branch() {
     log "Switching to branch ${1}"
-    git fetch
+    git fetch -v --unshallow -p -u origin
     git checkout "${1}" || git checkout -b "${1}" "origin/${1}"
     git pull
 }
