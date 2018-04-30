@@ -1,6 +1,9 @@
 #!/bin/bash
 
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
+declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions.sh"
+#declare -f is_gradle_project > /dev/null || source "$(dirname $0)/gradle-functions.sh"
+#declare -f is_npm_project > /dev/null || source "$(dirname $0)/npm-functions.sh"
 
 #----------------------
 # Script containing pre-defined functions regarding versioning.
@@ -37,4 +40,24 @@ next_snapshot_version() {
     local nextSnapshot="${base}$((minor+1))${suffix}"
     debug "Next development version from ${1} is ${nextSnapshot}"
     echo ${nextSnapshot}
+}
+
+get_version() {
+    if is_maven_project; then get_maven_version;
+#    elif is_gradle_project; then get_gradle_version;
+#    elif [ -f package.json ]; then get_npm_version;
+    else fatal "ERROR: No known project structure to determine version of.";
+    fi
+}
+
+set_version() {
+    local project_version="${1:-}"
+    validate_version ${project_version}
+    log "Setting project version to '${project_version}'."
+
+    if is_maven_project; then set_maven_version "${project_version}";
+#    elif is_gradle_project; then set_gradle_version "${project_version}";
+#    elif [ -f package.json ]; then set_npm_version "${project_version}"
+    else fatal "ERROR: No known project structure to set version for.";
+    fi
 }

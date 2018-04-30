@@ -3,26 +3,11 @@
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 declare -f is_semantic_version > /dev/null || source "$(dirname $0)/versioning.sh"
 declare -f is_pull_request > /dev/null || source "$(dirname $0)/git-functions.sh"
-declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions.sh"
-#declare -f is_gradle_project > /dev/null || source "$(dirname $0)/gradle-functions.sh"
-#declare -f is_npm_project > /dev/null || source "$(dirname $0)/npm-functions.sh"
-
-set_version() {
-    local project_version="${1:-}"
-    validate_version ${project_version}
-    log "Setting project version to '${project_version}'."
-
-    if is_maven_project; then set_maven_version "${project_version}";
-#    elif is_gradle_project; then set_gradle_version "${project_version}";
-#    elif [ -f package.json ]; then set_npm_version "${project_version}"
-    else fatal "ERROR: No known project structure to set version for.";
-    fi
-}
 
 create_release() {
     local branch="${1:-}"
     debug "Performing release from branch ${branch}."
-    is_release_version "${branch}" || fatal "Branch is not a valid release branch: '${branch}'."
+    is_release_version "${branch}" || fatal "Not a valid release branch: '${branch}'."
     local release_version="${branch#*/}"
     debug "Detected version '${release_version}'."
     validate_version "${release_version}"
@@ -64,3 +49,16 @@ create_release() {
     git push origin develop
     git push origin --delete "${branch}"
 }
+
+#----------------------
+# MAIN
+#----------------------
+
+[ -n "${GIT_BRANCH:-}" ] || GIT_BRANCH=$(find_remote_branch)
+
+if is_release_version "${GIT_BRANCH}"; then
+    log "Creating a new release from branch '${GIT_BRANCH}'."
+    create_release "${GIT_BRANCH}"
+else
+    log "Nothing to release, not on a release branch: '${GIT_BRANCH}'."
+fi
