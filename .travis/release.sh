@@ -1,4 +1,6 @@
 #!/bin/bash
+set -eu -o pipefail
+[[ "${DEBUG:-false}" =~ ^yes|true$ ]] && set -x
 
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 declare -f is_semantic_version > /dev/null || source "$(dirname $0)/versioning.sh"
