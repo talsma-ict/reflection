@@ -38,8 +38,7 @@ create_release() {
         git fetch -v origin
         git branch --list --all
     fi
-    git checkout -B master --track origin/master
-#    switch_to_branch master || create_branch master
+    switch_to_branch master || create_branch master
     [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch."
     git merge --no-edit --ff-only "${branch}"
     git branch -d "${branch}" || warn "Could not delete local release branch '${branch}'."
