@@ -31,6 +31,7 @@ create_release() {
 
     # Merge to master and delete local release branch
     log "Merging ${branch} to master"
+    git branch --list --all
     switch_to_branch master || create_branch master
     [[ "$(get_local_branch)" = "master" ]] || fatal "Could not switch to master branch."
     git merge --no-edit --ff-only "${branch}"
