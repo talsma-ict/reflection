@@ -14,7 +14,7 @@ That is why this library was created.
 ## Contributing
 
 Have you _found a bug_? Did you _create new featue_?  
-Please see the [contributing page](docs/CONTRIBUTING.md) for more information.
+Please see the [contributing page](CONTRIBUTING.md) for more information.
 
 ## Utility-class `Classes`
 
