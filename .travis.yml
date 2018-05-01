@@ -31,8 +31,8 @@ install:
   - ./mvnw --version
 
 script:
-  - DEBUG=true .travis/build.sh
-  - .travis/release.sh
+  - .travis/scripts/build.sh
+  - .travis/scripts/release.sh
 
 after_success:
   - if [ -f target/jacoco.exec ]; then ./mvnw jacoco:report coveralls:report; fi

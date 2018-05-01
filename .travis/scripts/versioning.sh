@@ -2,8 +2,6 @@
 
 declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions.sh"
-#declare -f is_gradle_project > /dev/null || source "$(dirname $0)/gradle-functions.sh"
-#declare -f is_npm_project > /dev/null || source "$(dirname $0)/npm-functions.sh"
 
 #----------------------
 # Script containing pre-defined functions regarding versioning.
@@ -55,8 +53,6 @@ set_file_version() {
 # Returns the current version for the project
 get_version() {
     if is_maven_project; then get_maven_version;
-#    elif is_gradle_project; then get_gradle_version;
-#    elif [ -f package.json ]; then get_npm_version;
     elif [ -f VERSION.txt ]; then get_file_version;
     else fatal "ERROR: No known project structure to determine version of.";
     fi
@@ -69,8 +65,6 @@ set_version() {
     log "Setting project version to '${project_version}'."
 
     if is_maven_project; then set_maven_version "${project_version}";
-#    elif is_gradle_project; then set_gradle_version "${project_version}";
-#    elif [ -f package.json ]; then set_npm_version "${project_version}";
     elif [ -f VERSION.txt ]; then set_file_version "${project_version}";
     else fatal "ERROR: No known project structure to set version for.";
     fi

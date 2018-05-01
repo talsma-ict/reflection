@@ -7,8 +7,6 @@ declare -f debug > /dev/null || source "$(dirname $0)/logging.sh"
 declare -f is_semantic_version > /dev/null || source "$(dirname $0)/versioning.sh"
 declare -f is_pull_request > /dev/null || source "$(dirname $0)/git-functions.sh"
 declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions.sh"
-#declare -f is_gradle_project > /dev/null || source "$(dirname $0)/gradle-functions.sh"
-#declare -f is_npm_project > /dev/null || source "$(dirname $0)/npm-functions.sh"
 
 #
 # Delegation
@@ -16,16 +14,12 @@ declare -f is_maven_project > /dev/null || source "$(dirname $0)/maven-functions
 
 build_and_test() {
     if is_maven_project; then build_and_test_maven;
-#    elif is_gradle_project; then build_and_test_gradle;
-#    elif [ -f package.json ]; then build_and_test_npm;
     else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
 
 build_and_publish_artifacts() {
     if is_maven_project; then build_and_publish_maven_artifacts;
-#    elif is_gradle_project; then build_and_publish_gradle_artifacts;
-#    elif is_npm_project; then build_and_publish_npm_artifacts;
     else fatal "ERROR: No known project structure to publish artifacts for.";
     fi
 }
