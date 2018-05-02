@@ -27,7 +27,7 @@ create_release() {
 
     local tagname="${release_version}"
     log "Tagging published code with '${tagname}'."
-    git tag -m "Publish version ${release_version}" "${tagname}"
+    git tag -m "Release version ${release_version}" "${tagname}"
 
     # Merge to master and delete local release branch
     log "Merging ${branch} to master"
