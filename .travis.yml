@@ -43,7 +43,7 @@ deploy:
   api_key: $GH_TOKEN
   file_glob: true
   file:
-    - target/*.jar
+    - ./**/target/*.jar
     - ./**/target/*.jar.asc
   skip_cleanup: true
   on:
