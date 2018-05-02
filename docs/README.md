@@ -11,6 +11,11 @@ As there seldom is enough time to do this properly and take things like caching
 into consideration, the solutions were always sub-optimal.
 That is why this library was created.
 
+## Contributing
+
+Have you _found a bug_? Did you _create new featue_?  
+Please see the [contributing page](CONTRIBUTING.md) for more information.
+
 ## Utility-class `Classes`
 
 For _getting_ or _finding_ classes and interacting with them.  
