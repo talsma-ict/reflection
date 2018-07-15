@@ -1,6 +1,7 @@
 [![Build Status][ci-img]][ci]
 [![Coverage Status][coveralls-img]][coveralls]
-[![Released Version][maven-img]][maven]
+[![Maven Version][maven-img]][maven]
+[![JavaDoc][javadoc-img]][javadoc]
 
 # Java reflection utilities
 
@@ -95,3 +96,6 @@ module com.example.myapp {
   [maven]: http://mvnrepository.com/artifact/nl.talsmasoftware/reflection
   [coveralls-img]: https://coveralls.io/repos/github/talsma-ict/reflection/badge.svg
   [coveralls]: https://coveralls.io/github/talsma-ict/reflection
+  [javadoc-img]: https://www.javadoc.io/badge/nl.talsmasoftware/reflection.svg
+  [javadoc]: https://www.javadoc.io/doc/nl.talsmasoftware/reflection 
+
