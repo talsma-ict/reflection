@@ -89,9 +89,9 @@ module com.example.myapp {
 [Apache 2.0 license](../LICENSE)
 
 
-  [ci-img]: https://img.shields.io/travis/talsma-ict/reflection/develop.svg
+  [ci-img]: https://travis-ci.org/talsma-ict/reflection.svg?branch=develop
   [ci]: https://travis-ci.org/talsma-ict/reflection
-  [maven-img]: https://img.shields.io/maven-central/v/nl.talsmasoftware/reflection.svg
-  [maven]: http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22nl.talsmasoftware%22%20AND%20a%3A%22reflection%22
+  [maven-img]: https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/nl/talsmasoftware/reflection/maven-metadata.xml.svg
+  [maven]: http://mvnrepository.com/artifact/nl.talsmasoftware/reflection
   [coveralls-img]: https://coveralls.io/repos/github/talsma-ict/reflection/badge.svg
   [coveralls]: https://coveralls.io/github/talsma-ict/reflection
