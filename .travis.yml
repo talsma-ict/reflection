@@ -30,6 +30,7 @@ before_install:
   - echo "https://$GH_TOKEN:@github.com" > .git/credentials
 
 install:
+  - ls -laF /usr/lib/jvm
   - ./mvnw --version
 
 script:
