@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Talsma ICT
+ * Copyright 2016-2019 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,8 @@ public class BeanReflectionTest {
         expected.put("class", Object.class);
         assertThat("Properties of new Object", BeanReflection.getPropertyValues(new Object()), is(equalTo(expected)));
 
-        assertThat(BeanReflection.getPropertyValues("String value").entrySet(), hasSize(3));
+        // Java 11 String has isBlank() method: test for 3 or 4 properties
+        assertThat(BeanReflection.getPropertyValues("String value").entrySet(), anyOf(hasSize(3), hasSize(4)));
         assertThat(BeanReflection.getPropertyValues("String value").get("class"), is(equalTo((Object) String.class)));
         assertThat(BeanReflection.getPropertyValues("String value").get("empty"), is(equalTo((Object) Boolean.FALSE)));
         assertThat(BeanReflection.getPropertyValues("String value").get("bytes"), is(instanceOf(byte[].class)));
