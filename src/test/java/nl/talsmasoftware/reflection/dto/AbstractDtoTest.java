@@ -18,11 +18,22 @@ package nl.talsmasoftware.reflection.dto;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static nl.talsmasoftware.test.TestUtil.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasToString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 /**
  * Test DTO objects.
@@ -146,6 +157,17 @@ public class AbstractDtoTest {
         assertThat(valueObject, hasToString(equalTo("DtoRepresentationV1{number=42, name=\"Representation name\", " +
                 "amountInEuros=12.50, subObject=DtoRepresentationV1{number=12, " +
                 "subObject=DtoRepresentationV1{number=99}}}")));
+    }
+
+    @Test
+    public void testToStringTruncatesLongValues() {
+        String extremelyLongString = randomString(1024, 1024);
+        BigDecimal extremelyBigDecimal = new BigDecimal(randomString(1024, 1024, "0123456789"));
+        valueObject.name = extremelyLongString;
+        valueObject.amountInEuros = extremelyBigDecimal;
+        valueObject.subObject = null;
+        assertThat(valueObject, hasToString(equalTo(
+                "DtoRepresentationV1{number=42, name=<String>, amountInEuros=<BigDecimal>}")));
     }
 
     @Test

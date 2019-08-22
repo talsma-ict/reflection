@@ -19,9 +19,15 @@ import nl.talsmasoftware.reflection.JavaBean;
 import nl.talsmasoftware.test.TestUtil;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+
 import static nl.talsmasoftware.test.TestUtil.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasToString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * @author Sjoerd Talsma
@@ -237,4 +243,38 @@ public class ToStringBuilderTest {
                         "value4=JavaBean{value1=\"a value\", value4=" + bean2ref + "}}}")));
     }
 
+    @Test
+    public void testMaximumPropertyLengthForCharSequence() {
+        CharSequence characters = new NonStringCharSequence("value");
+        assertThat(new ToStringBuilder(null).append(characters),
+                hasToString(equalTo("{\"value\"}")));
+
+        characters = new NonStringCharSequence(TestUtil.randomString(1024, 1024));
+        assertThat(new ToStringBuilder(null).append(characters),
+                hasToString(equalTo("{<NonStringCharSequence>}")));
+
+        characters = new NonStringCharSequence(TestUtil.randomString(1024, 1024)) {
+        };
+        assertThat(new ToStringBuilder(null).append("name", characters),
+                hasToString(equalTo("{name=<1024chars>}")));
+    }
+
+    @Test
+    public void testMaximumPropertyLengthForBigDecimal() {
+        BigDecimal decimal = new BigDecimal("1234.56");
+        assertThat(new ToStringBuilder(null).append(decimal), hasToString(equalTo("{1234.56}")));
+
+        decimal = new BigDecimal(TestUtil.randomString(1024, 1024, "0123456789"));
+        assertThat(new ToStringBuilder(null).append(decimal), hasToString(equalTo("{<BigDecimal>}")));
+    }
+
+    @Test
+    public void testEscapedStringQuotes() {
+        char backslash = '\\', quote = '\"';
+        String testValue = "slash: [" + backslash + "], quote: [" + quote + "]";
+        String escaped = new ToStringBuilder(null).append(testValue).toString();
+        assertThat(escaped, equalTo(
+                "{\"slash: [" + backslash + backslash + "], " +
+                        "quote: [" + backslash + quote + "]\"}"));
+    }
 }
