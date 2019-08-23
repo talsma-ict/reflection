@@ -42,6 +42,7 @@ import java.util.Map;
  */
 public class ToStringBuilder implements Appendable, CharSequence, Serializable {
     private static final long serialVersionUID = 1L;
+    private static int maximumValueLength = 128;
 
     protected final String prefix;
     protected final StringBuilder fields = new StringBuilder();
@@ -279,17 +280,32 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
      * @param value The property value to be added to this builder.
      */
     private void _appendValue(Object value) {
+        CharSequence stringValue;
+        boolean addQuotes = false;
         if (value == null) {
-            fields.append("<null>");
+            stringValue = "<null>";
         } else if (value instanceof CharSequence) {
-            fields.append('"').append(value.toString().replaceAll("\"", "\\\"")).append('"');
+            addQuotes = true;
+            stringValue = escapeQuotesInString(value.toString());
         } else {
-            final String stringValue = String.valueOf(value);
-            if (equals(stringValue, defaultToString(value))) {
-                fields.append(new ToStringBuilder(this, value).appendReflectedPropertiesOf(value));
-            } else {
-                fields.append(stringValue);
+            stringValue = value.toString();
+            if (defaultToString(value).equals(stringValue)) {
+                stringValue = new ToStringBuilder(this, value).appendReflectedPropertiesOf(value);
             }
+        }
+
+        int length = addQuotes ? ((CharSequence) value).length() : stringValue.length();
+        if (length > maximumValueLength) {
+            String simpleName = value.getClass().getSimpleName();
+            if (simpleName.length() > 0) {
+                fields.append('<').append(simpleName).append('>');
+            } else {
+                fields.append('<').append(length).append("chars>");
+            }
+        } else if (addQuotes) {
+            fields.append('"').append(stringValue).append('"');
+        } else {
+            fields.append(stringValue);
         }
     }
 
@@ -468,6 +484,30 @@ public class ToStringBuilder implements Appendable, CharSequence, Serializable {
             }
             return result;
         }
+    }
+
+    /**
+     * Escape any backslash {@code '\'} and double-quote {@code '"'} characters in the given String by prefixing an
+     * additional
+     *
+     * @param value The string value to be escaped
+     * @return The resulting string with all backslash and double-quote characters escaped.
+     */
+    private static String escapeQuotesInString(String value) {
+        final int length = value.length();
+        for (int i = 0; i < length; i++) {
+            char ch = value.charAt(i);
+            if (ch == '\\' || ch == '\"') {
+                StringBuilder copy = new StringBuilder(length + length / 2).append(value.substring(0, i));
+                while (i < length) {
+                    ch = value.charAt(i++);
+                    if (ch == '\\' || ch == '\"') copy.append('\\');
+                    copy.append(ch);
+                }
+                return copy.toString();
+            }
+        }
+        return value;
     }
 
 }
