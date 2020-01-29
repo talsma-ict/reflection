@@ -92,7 +92,7 @@ module com.example.myapp {
 
   [ci-img]: https://travis-ci.org/talsma-ict/reflection.svg?branch=develop
   [ci]: https://travis-ci.org/talsma-ict/reflection
-  [maven-img]: https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/nl/talsmasoftware/reflection/maven-metadata.xml.svg
+  [maven-img]: https://img.shields.io/maven-central/v/nl.talsmasoftware/reflection
   [maven]: http://mvnrepository.com/artifact/nl.talsmasoftware/reflection
   [coveralls-img]: https://coveralls.io/repos/github/talsma-ict/reflection/badge.svg
   [coveralls]: https://coveralls.io/github/talsma-ict/reflection
