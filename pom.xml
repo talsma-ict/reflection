@@ -76,7 +76,7 @@
         <xmlunit.version>2.6.3</xmlunit.version>
         <hibernate-validator.version>6.1.1.Final</hibernate-validator.version>
         <javax-el.version>2.2.6</javax-el.version>
-        <jackson2.version>2.10.2</jackson2.version>
+        <jackson2.version>2.10.2.20200130</jackson2.version>
 
         <!-- build -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
