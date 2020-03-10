@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Talsma ICT
+ * Copyright 2016-2020 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,16 @@
  */
 package nl.talsmasoftware.test;
 
-import junit.framework.AssertionFailedError;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Reader;
+import java.io.Serializable;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -303,8 +310,8 @@ public final class TestUtil {
      */
     public static void assertExceptionMessage(Exception exception) {
         if (exception == null || exception.getMessage() == null || exception.getMessage().trim().length() == 0) {
-            AssertionFailedError assertionFailedError =
-                    new AssertionFailedError("Exception doesn't contain a message: " + exception);
+            AssertionError assertionFailedError =
+                    new AssertionError("Exception doesn't contain a message: " + exception);
             assertionFailedError.initCause(exception);
             throw assertionFailedError;
         }

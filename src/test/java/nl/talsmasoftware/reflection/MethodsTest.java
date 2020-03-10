@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Talsma ICT
+ * Copyright 2016-2020 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,16 @@ package nl.talsmasoftware.reflection;
 import nl.talsmasoftware.reflection.errorhandling.MethodInvocationException;
 import nl.talsmasoftware.reflection.errorhandling.MissingMethodException;
 import nl.talsmasoftware.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
 import static nl.talsmasoftware.test.TestUtil.assertExceptionMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Sjoerd Talsma
@@ -133,7 +135,7 @@ public class MethodsTest {
     public void testCall() throws NoSuchMethodException {
         assertThat(Methods.call(Object.class.getMethod("toString"), "The quick brown fox jumps over the lazy dog"),
                 is((Object) "The quick brown fox jumps over the lazy dog"));
-        assertThat(Methods.call("java.lang.Object.equals", "my value",  "my value"), is((Object) true));
+        assertThat(Methods.call("java.lang.Object.equals", "my value", "my value"), is((Object) true));
     }
 
     @Test

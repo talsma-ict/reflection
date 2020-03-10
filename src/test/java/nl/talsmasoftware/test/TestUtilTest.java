@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Talsma ICT
+ * Copyright 2016-2020 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,18 @@
  */
 package nl.talsmasoftware.test;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtilTest {
     private static final Logger LOGGER = Logger.getLogger(TestUtilTest.class.getName());
@@ -39,9 +42,8 @@ public class TestUtilTest {
 
     @Test
     public void testDefaultRandomChars() {
-        assertEquals("Default random characters",
-                " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
-                TestUtil.getPrivateField(TestUtil.class, "DEFAULT_RANDOM_CHARS"));
+        assertThat(TestUtil.getPrivateField(TestUtil.class, "DEFAULT_RANDOM_CHARS"),
+                equalTo(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"));
     }
 
     @Test
@@ -55,7 +57,7 @@ public class TestUtilTest {
             } catch (AssertionError expected) {
                 assertionError = true;
             }
-            assertTrue("Assertion error verwacht.", assertionError);
+            assertTrue(assertionError, () -> "Assertion error expected.");
         }
     }
 
