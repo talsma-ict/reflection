@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Talsma ICT
+ * Copyright 2016-2020 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package nl.talsmasoftware.reflection;
 import nl.talsmasoftware.reflection.errorhandling.InstantiatingException;
 import nl.talsmasoftware.reflection.errorhandling.MissingClassException;
 import nl.talsmasoftware.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static nl.talsmasoftware.test.TestUtil.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Sjoerd Talsma
@@ -40,14 +43,14 @@ public class ClassesTest {
         assertThat(Classes.getClass(String.class.getName()), is(equalTo((Class) String.class)));
     }
 
-    @Test(expected = MissingClassException.class)
+    @Test
     public void testGetClass_NameNull() {
-        Classes.getClass(null);
+        assertThrows(MissingClassException.class, () -> Classes.getClass(null));
     }
 
-    @Test(expected = MissingClassException.class)
+    @Test
     public void testGetClass_NotFound() {
-        Classes.getClass(NONEXISTENT_TYPE);
+        assertThrows(MissingClassException.class, () -> Classes.getClass(NONEXISTENT_TYPE));
     }
 
     @Test
@@ -59,9 +62,10 @@ public class ClassesTest {
                 is(equalTo(new Class[]{Integer.class, String.class})));
     }
 
-    @Test(expected = MissingClassException.class)
+    @Test
     public void testGetClasses_NotFound() {
-        Classes.getClasses(String.class.getName(), NONEXISTENT_TYPE, Integer.class.getName());
+        assertThrows(MissingClassException.class, () ->
+                Classes.getClasses(String.class.getName(), NONEXISTENT_TYPE, Integer.class.getName()));
     }
 
     @Test
@@ -99,10 +103,9 @@ public class ClassesTest {
         assertThat(Classes.tryCreateNew(Object.class), is(notNullValue()));
     }
 
-    @Test(expected = InstantiatingException.class)
+    @Test
     public void testCreateNew_exceptionInConstructor() {
-        Classes.createNew(Thrower.class);
-        fail("InstantiatingException expected.");
+        assertThrows(InstantiatingException.class, () -> Classes.createNew(Thrower.class));
     }
 
     @Test

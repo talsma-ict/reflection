@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 Talsma ICT
+ * Copyright 2016-2020 Talsma ICT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,42 @@ package nl.talsmasoftware.reflection.beans;
 import nl.talsmasoftware.reflection.errorhandling.MissingConstructorException;
 import nl.talsmasoftware.test.TestUtil;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.lang.annotation.*;
-import java.util.*;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 import static nl.talsmasoftware.reflection.beans.BeanReflection.createBean;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BeanReflectionTest {
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearCaches() {
         BeanReflection.flushCaches();
     }
@@ -101,11 +120,11 @@ public class BeanReflectionTest {
         assertThat(BeanReflection.getPropertyValue(bean, "indication2"), is(equalTo((Object) true)));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testGetBeanProperties_mutability() {
         Iterator<BeanProperty> it = BeanReflection.getBeanProperties(BeanWithAccessorsAndFields.class).iterator();
         it.next();
-        it.remove();
+        assertThrows(UnsupportedOperationException.class, it::remove);
     }
 
     static BeanProperty find(Iterable<? extends BeanProperty> props, String name) {
@@ -257,12 +276,8 @@ public class BeanReflectionTest {
 
     @Test
     public void testCreateBean_nullType() {
-        try {
-            createBean(null, new HashMap<String, Object>());
-            Assert.fail("Exception expected!");
-        } catch (RuntimeException expected) {
-            TestUtil.assertExceptionMessage(expected);
-        }
+        RuntimeException expected = assertThrows(RuntimeException.class, () -> createBean(null, new HashMap<>()));
+        TestUtil.assertExceptionMessage(expected);
     }
 
     @Test
@@ -273,9 +288,9 @@ public class BeanReflectionTest {
         assertThat(bean.nested, is(nullValue()));
     }
 
-    @Test(expected = MissingConstructorException.class)
+    @Test
     public void testCreateBean_noDefaultConstructor() {
-        createBean(BeanWithGetter.class, null);
+        assertThrows(MissingConstructorException.class, () -> createBean(BeanWithGetter.class, null));
     }
 
     @Test

@@ -92,26 +92,10 @@
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
-        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <umldoclet.version>2.0.8</umldoclet.version>
     </properties>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.properties</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -132,24 +116,6 @@
                         </jdk>
                     </toolchains>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>${buildnumber-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                        <configuration>
-                            <buildNumberPropertyName>git.revision</buildNumberPropertyName>
-                            <timestampFormat>{0,date,yyyy-MM-dd'T'HH:mm:ss.SSSZ}</timestampFormat>
-                            <timestampPropertyName>build.timestamp</timestampPropertyName>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
@@ -218,16 +184,22 @@
                             <excludes>
                                 <exclude>module-info.java</exclude>
                             </excludes>
+                            <source>1.5</source>
+                            <target>1.5</target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
                         </configuration>
                     </execution>
                 </executions>
-                <configuration> <!-- defaults for compile and testCompile -->
-                    <jdkToolchain>
-                        <version>[1.5,1.8]</version>
-                    </jdkToolchain>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -347,12 +319,6 @@
     <dependencies>
         <!-- Test dependencies: -->
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.version}</version>
@@ -411,7 +377,7 @@
             <version>${umldoclet.version}</version>
             <scope>test</scope>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
