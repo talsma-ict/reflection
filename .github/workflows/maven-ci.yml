@@ -27,7 +27,10 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    - name: Display maven verison info
+    - name: Display maven version info
       run: ./mvnw --version
+    - name: Inspect environment
+      run: |
+        set | grep JAVA
     - name: Build with Maven
       run: ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false --global-toolchains .github/mvn-toolchains.xml
