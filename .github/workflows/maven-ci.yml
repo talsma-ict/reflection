@@ -26,6 +26,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Display maven verison info
-      run: mvn --version
+      run: ./mvnw --version
     - name: Build with Maven
-      run: mvn --batch-mode clean verify -Dmaven.test.failure.ignore=false --global-toolchains .github/mvn-toolchains.xml
+      run: ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false --global-toolchains .github/mvn-toolchains.xml
