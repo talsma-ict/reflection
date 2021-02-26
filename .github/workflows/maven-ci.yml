@@ -31,5 +31,7 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Display maven version info
       run: ./mvnw --version
-    - name: Build with Maven
-      run: ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false --global-toolchains .github/mvn-toolchains.xml
+    - name: Build and Test with Maven
+      run: ./mvnw --batch-mode clean verify -Dmaven.test.failure.ignore=false --global-toolchains .github/mvn-toolchains.xml --settings .github/mvn-settings.xml
+      env:
+        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
