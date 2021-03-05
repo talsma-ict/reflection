@@ -1,4 +1,4 @@
-[![Build Status][ci-img]][ci]
+[![CI build][ci-img]][ci]
 [![Coverage Status][coveralls-img]][coveralls]
 [![Maven Version][maven-img]][maven]
 [![JavaDoc][javadoc-img]][javadoc]
@@ -90,8 +90,8 @@ module com.example.myapp {
 [Apache 2.0 license](../LICENSE)
 
 
-  [ci-img]: https://travis-ci.org/talsma-ict/reflection.svg?branch=develop
-  [ci]: https://travis-ci.org/talsma-ict/reflection
+  [ci-img]: https://github.com/talsma-ict/reflection/actions/workflows/ci-build.yml/badge.svg
+  [ci]: https://github.com/talsma-ict/reflection/actions/workflows/ci-build.yml
   [maven-img]: https://img.shields.io/maven-central/v/nl.talsmasoftware/reflection
   [maven]: http://mvnrepository.com/artifact/nl.talsmasoftware/reflection
   [coveralls-img]: https://coveralls.io/repos/github/talsma-ict/reflection/badge.svg
