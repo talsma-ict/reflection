@@ -43,6 +43,6 @@ jobs:
       env:
         GPG_EXECUTABLE: /usr/bin/gpg
         GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
-        GPG_PASSPHRASE: ${{ secrets.GPGP_PASSPHRASE }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
         SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
