@@ -1,11 +1,11 @@
-name: Maven-ci-build
+name: CI build
 
 # Run this workflow every time a new commit pushed to your repository
 on: push
 
 jobs:
   build:
-    name: Maven CI build
+    name: CI build
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -16,7 +16,6 @@ jobs:
       run: |
         cat <(echo -e "${{ secrets.GPG_SECRET_KEYS }}") | base64 --decode | gpg --batch --import
         cat <(echo -e "${{ secrets.GPG_OWNERTRUST }}") | base64 --decode | gpg --batch --import-ownertrust
-#        gpg --list-secret-keys --keyid-format LONG
     - name: Set up graphviz
       run: sudo apt-get install graphviz
     - name: Set up JDK 8 for compiling Java 5 compatible bytecode
