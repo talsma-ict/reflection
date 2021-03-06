@@ -1,0 +1,44 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [ "CI Build" ]
+    types: [ "completed" ]
+
+jobs:
+  deploy:
+    name: "Deploy artifacts"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup GPG
+      run: |
+        cat <(echo -e "${{ secrets.GPG_SECRET_KEYS }}") | base64 --decode | gpg --batch --import
+        cat <(echo -e "${{ secrets.GPG_OWNERTRUST }}") | base64 --decode | gpg --batch --import-ownertrust
+    - name: Setup Graphviz
+      run: sudo apt-get install graphviz
+    - name: Set up JDK 8 for compiling Java 5 compatible bytecode
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Set up JDK 9 to support jigsaw module system
+      uses: actions/setup-java@v1
+      with:
+        java-version: 9
+    - name: Setup maven cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-m2-repo-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2-repo-
+    - name: Deploy to maven central
+      run: ./mvnw --batch-mode --no-snapshot-updates -Prelease deploy -DskipTests --global-toolchains .github/mvn-toolchains.xml --settings .github/mvn-settings.xml
+      env:
+        GPG_EXECUTABLE: /usr/bin/gpg
+        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
