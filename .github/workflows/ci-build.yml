@@ -30,9 +30,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        key: ${{ runner.os }}-m2-repo-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2-repo-
     - name: Display maven version info
       run: ./mvnw --version
     - name: Build and test
