@@ -56,14 +56,22 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Setup maven cache
+      - name: Set up maven cache
         uses: actions/cache@v2
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-repo-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-repo-
+      - name: Set up CI git user
+        run: |
+          git config user.name "Talsma CI"
+          git config user.email "ci-user@talsma-ict.nl"
+          git config credential.helper "store --file=.git/credentials"
+          cat <(echo -e "https://${{ secrets.GH_TOKEN }}:@github.com") > .git/credentials
       - name: Perform optional release
         run: .github/scripts/release.sh
         shell: bash
         env:
           MAVEN_CLI_OPTS: --settings .github/mvn-settings.xml
+          GH_USER: ${{ secrets.GH_USER }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
