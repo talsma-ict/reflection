@@ -139,6 +139,7 @@
                     </mapping>
                     <excludes>
                         <exclude>.gitignore</exclude>
+                        <exclude>.github/**</exclude>
                         <exclude>.travis/**</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>.mvn/**</exclude>
@@ -170,7 +171,7 @@
                         <id>default-compile</id>
                         <configuration>
                             <jdkToolchain>
-                                <version>9</version>
+                                <version>[9,)</version>
                             </jdkToolchain>
                             <release>9</release>
                         </configuration>
@@ -427,6 +428,8 @@
                                 <configuration>
                                     <gpgArguments>
                                         <gpgArgument>--batch</gpgArgument>
+                                        <gpgArgument>--pinentry-mode</gpgArgument>
+                                        <gpgArgument>loopback</gpgArgument>
                                     </gpgArguments>
                                 </configuration>
                             </execution>
