@@ -54,6 +54,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+#          persist-credentials: false
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
@@ -68,12 +70,12 @@ jobs:
         run: |
           git config user.name "Talsma CI"
           git config user.email "ci-user@talsma-ict.nl"
-          git config credential.helper "store --file=.git/credentials"
-          cat <(echo -e "https://${{ secrets.GH_TOKEN }}:@github.com") > .git/credentials
+#          git config credential.helper "store --file=.git/credentials"
+#          cat <(echo -e "https://${{ secrets.GH_TOKEN }}:@github.com") > .git/credentials
       - name: Perform optional release
         run: .github/scripts/release.sh
         shell: bash
         env:
           MAVEN_CLI_OPTS: --settings .github/mvn-settings.xml
           GH_USER: ${{ secrets.GH_USER }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+#          GH_TOKEN: ${{ secrets.GH_TOKEN }}
