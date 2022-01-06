@@ -34,8 +34,6 @@ import static nl.talsmasoftware.reflection.beans.ReflectedBeanProperty.propertyN
 /**
  * Support-class for bean reflection based on getter / setter methods and / or public field access for Java objects.
  * Unfortunately this is necessary because the standard Java bean introspector}does not return any  public fields.
- * <p>
- * Class diagram:<br><center><img src="BeanReflection.svg" alt="class diagram"></center>
  *
  * @author Sjoerd Talsma
  */

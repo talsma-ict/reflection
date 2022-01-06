@@ -18,8 +18,6 @@
  * For example, there is a {@link nl.talsmasoftware.reflection.strings.ToStringBuilder ToStringBuilder}
  * that will reflect appended values if the toString() result of the value equals the standard
  * <code>java.lang.Object</code> (class@hash) representation.
- * <p>
- * Class diagram for this package:<br><center><img src="package.svg" alt="package class diagram"></center>
  *
  * @author Sjoerd Talsma
  */
