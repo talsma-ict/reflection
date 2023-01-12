@@ -73,7 +73,7 @@
         <slf4j.version>2.0.6</slf4j.version>
         <logback.version>1.4.5</logback.version>
         <jsonassert.version>1.5.1</jsonassert.version>
-        <xmlunit.version>2.9.0</xmlunit.version>
+        <xmlunit.version>2.9.1</xmlunit.version>
         <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
         <javax-el.version>2.2.6</javax-el.version>
         <jackson2.version>2.14.1</jackson2.version>
