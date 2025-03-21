@@ -1,8 +1,3 @@
-[![CI build][ci-img]][ci]
-[![Coverage Status][coveralls-img]][coveralls]
-[![Maven Version][maven-img]][maven]
-[![JavaDoc][javadoc-img]][javadoc]
-
 # Java reflection utilities
 
 This library contains utility classes related to reflection.  
